@@ -30,10 +30,14 @@ class ImageClassificationDatasetJob(ImageDatasetJob):
             print 'Upgrading ImageClassificationDatasetJob to version 2'
             task = self.train_db_task()
             if task.image_dims[2] == 3:
-                if task.encode:
+                if task.encoding == "jpg":
                     if task.mean_file.endswith('.binaryproto'):
                         print '\tConverting mean file "%s" from RGB to BGR.' % task.path(task.mean_file)
-                        from caffe.proto import caffe_pb2
+                        try:
+                            import caffe_pb2
+                        except ImportError:
+                            # See issue #32
+                            from caffe.proto import caffe_pb2
                         import numpy as np
 
                         old_blob = caffe_pb2.BlobProto()

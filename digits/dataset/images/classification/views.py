@@ -1,13 +1,12 @@
 # Copyright (c) 2014-2015, NVIDIA CORPORATION.  All rights reserved.
 
 import os
-import shutil
 
-from flask import render_template, request, redirect, url_for, flash
+import flask
 
 from digits import utils
-from digits.config import config_option
-from digits.webapp import app, scheduler
+from digits.utils.routing import request_wants_json
+from digits.webapp import app, scheduler, autodoc
 from digits.dataset import tasks
 from forms import ImageClassificationDatasetForm
 from job import ImageClassificationDatasetJob
@@ -120,17 +119,17 @@ def from_files(job, form):
     """
     ### labels
 
-    request.files[form.textfile_labels_file.name].save(
+    flask.request.files[form.textfile_labels_file.name].save(
             os.path.join(job.dir(), utils.constants.LABELS_FILE)
             )
     job.labels_file = utils.constants.LABELS_FILE
 
     encoding = form.encoding.data
-    shuffle = form.textfile_shuffle.data
+    shuffle = bool(form.textfile_shuffle.data)
 
     ### train
 
-    request.files[form.textfile_train_images.name].save(
+    flask.request.files[form.textfile_train_images.name].save(
             os.path.join(job.dir(), utils.constants.TRAIN_FILE)
             )
 
@@ -156,7 +155,7 @@ def from_files(job, form):
     ### val
 
     if form.textfile_use_val.data:
-        request.files[form.textfile_val_images.name].save(
+        flask.request.files[form.textfile_val_images.name].save(
                 os.path.join(job.dir(), utils.constants.VAL_FILE)
                 )
 
@@ -181,7 +180,7 @@ def from_files(job, form):
     ### test
 
     if form.textfile_use_test.data:
-        request.files[form.textfile_test_images.name].save(
+        flask.request.files[form.textfile_test_images.name].save(
                 os.path.join(job.dir(), utils.constants.TEST_FILE)
                 )
 
@@ -205,15 +204,29 @@ def from_files(job, form):
 
 
 @app.route(NAMESPACE + '/new', methods=['GET'])
+@autodoc('datasets')
 def image_classification_dataset_new():
+    """
+    Returns a form for a new ImageClassificationDatasetJob
+    """
     form = ImageClassificationDatasetForm()
-    return render_template('datasets/images/classification/new.html', form=form)
+    return flask.render_template('datasets/images/classification/new.html', form=form)
 
+@app.route(NAMESPACE + '.json', methods=['POST'])
 @app.route(NAMESPACE, methods=['POST'])
+@autodoc(['datasets', 'api'])
 def image_classification_dataset_create():
+    """
+    Creates a new ImageClassificationDatasetJob
+
+    Returns JSON when requested: {job_id,name,status} or {errors:[]}
+    """
     form = ImageClassificationDatasetForm()
     if not form.validate_on_submit():
-        return render_template('datasets/images/classification/new.html', form=form), 400
+        if request_wants_json():
+            return flask.jsonify({'errors': form.errors}), 400
+        else:
+            return flask.render_template('datasets/images/classification/new.html', form=form), 400
 
     job = None
     try:
@@ -234,7 +247,10 @@ def image_classification_dataset_create():
             from_files(job, form)
 
         scheduler.add_job(job)
-        return redirect(url_for('datasets_show', job_id=job.id()))
+        if request_wants_json():
+            return flask.jsonify(job.json_dict())
+        else:
+            return flask.redirect(flask.url_for('datasets_show', job_id=job.id()))
 
     except:
         if job:
@@ -245,5 +261,5 @@ def show(job):
     """
     Called from digits.dataset.views.datasets_show()
     """
-    return render_template('datasets/images/classification/show.html', job=job)
+    return flask.render_template('datasets/images/classification/show.html', job=job)
 

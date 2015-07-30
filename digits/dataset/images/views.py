@@ -3,28 +3,32 @@
 import os.path
 from cStringIO import StringIO
 
-from flask import request
+import flask
 import PIL.Image
 
+import digits
 from digits import utils
-from digits.webapp import app
+from digits.webapp import app, autodoc
 import classification.views
+import extraction.views
 
 NAMESPACE = '/datasets/images'
 
 @app.route(NAMESPACE + '/resize-example', methods=['POST'])
+@autodoc('datasets')
 def image_dataset_resize_example():
-    """Returns a string of png data"""
+    """
+    Resizes the example image, and returns it as a string of png data
+    """
     try:
-        import digits
         example_image_path = os.path.join(os.path.dirname(digits.__file__), 'static', 'images', 'mona_lisa.jpg')
         image = utils.image.load_image(example_image_path)
 
-        width = int(request.form['width'])
-        height = int(request.form['height'])
-        channels = int(request.form['channels'])
-        resize_mode = request.form['resize_mode']
-        encoding = request.form['encoding']
+        width = int(flask.request.form['width'])
+        height = int(flask.request.form['height'])
+        channels = int(flask.request.form['channels'])
+        resize_mode = flask.request.form['resize_mode']
+        encoding = flask.request.form['encoding']
 
         image = utils.image.resize_image(image, height, width,
                 channels=channels,

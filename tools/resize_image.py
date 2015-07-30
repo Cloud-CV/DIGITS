@@ -8,8 +8,13 @@ import logging
 
 import PIL.Image
 
-# Add path for DIGITS package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    import digits
+except ImportError:
+    # Add path for DIGITS package
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import digits.config
+digits.config.load_config()
 from digits import utils, log
 
 logger = logging.getLogger('digits.tools.resize_image')
@@ -41,7 +46,7 @@ def validate_input_file(filename):
         return False
     return True
 
-def validate_range(number, min=None, max=None, allow_none=False):
+def validate_range(number, min_value=None, max_value=None, allow_none=False):
     if number is None:
         if allow_none:
             return True
@@ -54,10 +59,10 @@ def validate_range(number, min=None, max=None, allow_none=False):
         logger.error('invalid value %s' % number)
         return False
 
-    if min is not None and number < min:
+    if min_value is not None and number < min_value:
         logger.error('invalid value %s' % number)
         return False
-    if max is not None and number > max:
+    if max_value is not None and number > max_value:
         logger.error('invalid value %s' % number)
         return False
     return True
@@ -96,9 +101,10 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
 
     for valid in [
-            validate_range(args['width'], min=1),
-            validate_range(args['height'], min=1),
-            validate_range(args['channels'], min=1, max=3, allow_none=True),
+            validate_range(args['width'], min_value=1),
+            validate_range(args['height'], min_value=1),
+            validate_range(args['channels'],
+                min_value=1, max_value=3, allow_none=True),
             validate_output_file(args['output']),
             ]:
         if not valid:

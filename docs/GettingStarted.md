@@ -3,10 +3,11 @@
 Table of Contents
 =================
 * [Installation](#installation)
-* [Starting DIGITS](#starting-digits)
-* [Using DIGITS](#using-digits)
+* [Starting the server](#starting-the-server)
+* [Using the webapp](#using-the-webapp)
     * [Creating a Dataset](#creating-a-dataset)
     * [Training a Model](#training-a-model)
+* [Using the REST API](#using-the-rest-api)
 
 ## Installation
 
@@ -14,7 +15,7 @@ If you are using the web installer, check out this [installation page](WebInstal
 
 If you are installing from source, check out the [README](../README.md#installation).
 
-## Starting DIGITS
+## Starting the server
 
 If you are using the web installer use the `runme.sh` script:
 
@@ -26,64 +27,36 @@ If you are not using the web installer, use the `digits-devserver` script:
     % cd $HOME/digits
     % ./digits-devserver
 
-The first time DIGITS is run, you will be asked to confirm some configuration options. In most cases, you should be able to accept the defaults by pressing `ENTER` repeatedly.
+The first time DIGITS is run, you may be asked to provide some configuration options.
 
-<pre>
+```
 % ./digits-devserver
   ___ ___ ___ ___ _____ ___
  |   \_ _/ __|_ _|_   _/ __|
  | |) | | (_ || |  | | \__ \
  |___/___\___|___| |_| |___/
 
-Welcome to the DIGITS config module.
-
+DIGITS requires at least one DL backend to run.
+==================================== Caffe =====================================
 Where is caffe installed?
-    (enter "SYS" if installed system-wide)
-    [default is /home/username/caffe]
-(q to quit) >>>
-Accepting default value of "/home/username/caffe"
 
-Attached devices:
-Device #0:
-    Name                 GeForce GTX 980
-    Compute capability   5.2
-    Memory               4.0 GB
-    Multiprocessors      16
+        Suggested values:
+        (P*) [PATH/PYTHONPATH] <PATHS>
+>> ~/caffe
+Using "/home/username/caffe"
 
-Device #1:
-    Name                 Tesla K20c
-    Compute capability   3.5
-    Memory               4.69 GB
-    Multiprocessors      13
-
-
-Input the IDs of the devices you would like to use, separated by commas, in order of preference.
-    (enter "NONE" if you want to run in CPU-only mode)
-    [default is 0,1]
-(q to quit) >>>
-Accepting default value of "0,1"
-
-Where would you like to store jobs?
-    [default is /home/username/.digits/jobs]
-(q to quit) >>>
-Accepting default value of "/home/username/.digits/jobs"
-
-What is the minimum log level that you want to save to your logfile? [error/warning/info/debug]
-    [default is info]
-(q to quit) >>>
-Accepting default value of "info"
-
-New config:
-            gpu_list - 0,1
-          secret_key - acea8d2a9d9a3abaf930f235
-           log_level - info
-            jobs_dir - /home/username/.digits/jobs
-          caffe_root - /home/username/caffe
-
+Saved config to /home/username/digits/digits/digits.cfg
  * Running on http://0.0.0.0:5000/
-</pre>
+```
 
-## Using DIGITS
+ Most values are set silently by default. If you need more control over your configuration, try one of these commands:
+
+    # Set more options before starting the server
+    ./digits-devserver --config
+    # Advanced usage
+    python -m digits.config.edit --verbose
+
+## Using the Webapp
 
 Now that DIGITS is running, open a browser and go to http://localhost:5000.  You should see the DIGITS home screen:
 
@@ -140,3 +113,7 @@ DIGITS will display the top five classifications and corresponding confidence va
 
 ![Classified one image](images/classified-one-image.jpg)
 
+
+## Using the REST API
+
+Use your favorite tool (`curl`, `wget`, etc.) to interact with DIGITS through the [REST API](API.md).

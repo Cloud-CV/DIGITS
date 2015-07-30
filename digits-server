@@ -1,12 +1,8 @@
 #!/bin/bash
 # Copyright (c) 2014-2015, NVIDIA CORPORATION.  All rights reserved.
 
-# set level
-if [ -z "$DIGITS_LEVEL" ]
-then
-    DIGITS_LEVEL=system
-fi
-
-DIGITS_LEVEL=$DIGITS_LEVEL $(command -v python) $(command -v gunicorn) \
-    --config gunicorn_config.py \
-    digits.webapp:app
+/usr/bin/pip --upgrade gunicorn
+$(command -v python) $(command -v gunicorn) \
+   --reload --pythonpath /root/digits --config gunicorn_config.py \
+    digits.webapp:app \
+    $@

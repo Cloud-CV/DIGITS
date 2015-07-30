@@ -8,7 +8,6 @@ import operator
 import digits
 from digits import utils
 from digits.utils import subclass, override
-from digits.status import Status
 from digits.task import Task
 
 # NOTE: Increment this everytime the pickled version changes
@@ -109,7 +108,17 @@ class CreateDbTask(Task):
             return super(CreateDbTask, self).html_id()
 
     @override
-    def task_arguments(self, **kwargs):
+    def offer_resources(self, resources):
+        key = 'create_db_task_pool'
+        if key not in resources:
+            return None
+        for resource in resources[key]:
+            if resource.remaining() >= 1:
+                return {key: [(resource.identifier, 1)]}
+        return None
+
+    @override
+    def task_arguments(self, resources):
         args = [sys.executable, os.path.join(os.path.dirname(os.path.dirname(digits.__file__)), 'tools', 'create_db.py'),
                 self.path(self.input_file),
                 self.path(self.db_name),

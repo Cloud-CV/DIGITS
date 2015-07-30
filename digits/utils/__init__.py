@@ -8,12 +8,11 @@ from random import uniform
 from urlparse import urlparse
 from io import BlockingIOError
 import inspect
-import re
 
 HTTP_TIMEOUT = 6.05
 
 def is_url(url):
-    return urlparse(url).scheme != ""
+    return url is not None and urlparse(url).scheme != ""
 
 def wait_time():
     """Wait a random number of seconds"""

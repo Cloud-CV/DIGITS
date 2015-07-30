@@ -12,18 +12,27 @@ import random
 import threading
 import Queue
 
-# Add path for DIGITS package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from digits import utils, config, log
+try:
+    import digits
+except ImportError:
+    # Add path for DIGITS package
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import digits.config
+digits.config.load_config()
+from digits import utils, log
 
 import numpy as np
 import PIL.Image
 import leveldb
 import lmdb
 from cStringIO import StringIO
-# must import digits.config before caffe to set the path
+# must call digits.config.load_config() before caffe to set the path
 import caffe.io
-from caffe.proto import caffe_pb2
+try:
+    import caffe_pb2
+except ImportError:
+    # See issue #32
+    from caffe.proto import caffe_pb2
 
 logger = logging.getLogger('digits.tools.create_db')
 
@@ -59,7 +68,7 @@ class DbCreator:
             self.backend = 'leveldb'
             self.db = leveldb.LevelDB(self.output_path, error_if_exists=True)
         else:
-            raise Exception('unknown backend: "%"' % backend)
+            raise ValueError('unknown backend: "%s"' % backend)
 
         self.shutdown = threading.Event()
         self.keys_lock = threading.Lock()
@@ -171,7 +180,7 @@ class DbCreator:
             for line in lines:
                 # Expect format - [/]path/to/file.jpg 123
                 match = re_match(r'(.+)\s+(\d+)\s*$', line)
-                if match != None:
+                if match is not None:
                     path = match.group(1)
                     label = int(match.group(2))
                     self.read_queue.put( (path, label) )

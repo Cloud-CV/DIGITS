@@ -1,7 +1,6 @@
 # Copyright (c) 2014-2015, NVIDIA CORPORATION.  All rights reserved.
 
 import os.path
-import math
 
 import requests
 import cStringIO
@@ -25,6 +24,10 @@ from . import is_url, HTTP_TIMEOUT, errors
 #       when decoding images, channels are BGR
 #   DIGITS:
 #       image_dims -- (height, width, channels)
+
+# List of supported file extensions
+# Use like "if filename.endswith(SUPPORTED_EXTENSIONS)"
+SUPPORTED_EXTENSIONS = ('.png','.jpg','.jpeg','.bmp','.ppm')
 
 def load_image(path):
     """

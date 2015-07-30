@@ -3,14 +3,12 @@
 import os
 import time
 import os.path
-import time
 import pickle
 import shutil
 
-from flask import render_template
+import flask
 
-from digits import utils
-from digits.config import config_option
+from digits.config import config_value
 from status import Status, StatusCls
 
 # NOTE: Increment this everytime the pickled object changes
@@ -26,15 +24,22 @@ class Job(StatusCls):
     def load(cls, job_id):
         """
         Loads a Job in the given job_id
-        Returns the Job or None if an error occurred
+        Returns the Job or throws an exception
         """
-        job_dir = os.path.join(config_option('jobs_dir'), job_id)
+        from digits.model.tasks import TrainTask
+
+        job_dir = os.path.join(config_value('jobs_dir'), job_id)
         filename = os.path.join(job_dir, cls.SAVE_FILE)
         with open(filename, 'rb') as savefile:
-            o = pickle.load(savefile)
+            job = pickle.load(savefile)
             # Reset this on load
-            o._dir = job_dir
-            return o
+            job._dir = job_dir
+            for task in job.tasks:
+                task.job_dir = job_dir
+                if isinstance(task, TrainTask):
+                    # can't call this until the job_dir is set
+                    task.detect_snapshots()
+            return job
 
     def __init__(self, name):
         """
@@ -45,7 +50,7 @@ class Job(StatusCls):
 
         # create a unique ID
         self._id = '%s-%s' % (time.strftime('%Y%m%d-%H%M%S'), os.urandom(2).encode('hex'))
-        self._dir = os.path.join(config_option('jobs_dir'), self._id)
+        self._dir = os.path.join(config_value('jobs_dir'), self._id)
         self._name = name
         self.pickver_job = PICKLE_VERSION
         self.tasks = []
@@ -70,6 +75,21 @@ class Job(StatusCls):
         Used when loading a pickle file
         """
         self.__dict__ = state
+
+    def json_dict(self, detailed=False):
+        """
+        Returns a dict used for a JSON representation
+        """
+        d = {
+                'id': self.id(),
+                'name': self.name(),
+                'status': self.status.name,
+                }
+        if detailed:
+            d.update({
+                'directory': self.dir(),
+                })
+        return d
 
     def id(self):
         """getter for _id"""
@@ -97,7 +117,7 @@ class Job(StatusCls):
         else:
             path = os.path.join(self._dir, filename)
         if relative:
-            path = os.path.relpath(path, config_option('jobs_dir'))
+            path = os.path.relpath(path, config_value('jobs_dir'))
         return str(path)
 
     def path_is_local(self, path):
@@ -132,7 +152,7 @@ class Job(StatusCls):
                 'running': self.status.is_running(),
                 }
         with app.app_context():
-            message['html'] = render_template('status_updates.html', updates=self.status_history)
+            message['html'] = flask.render_template('status_updates.html', updates=self.status_history)
 
         socketio.emit('job update',
                 message,
@@ -150,15 +170,20 @@ class Job(StatusCls):
             task.abort()
 
     def save(self):
-        """save to pickle file"""
+        """
+        Saves the job to disk as a pickle file
+        Suppresses errors, but returns False if something goes wrong
+        """
         try:
             # use tmpfile so we don't abort during pickle dump (leading to EOFErrors)
             tmpfile_path = self.path(self.SAVE_FILE + '.tmp')
             with open(tmpfile_path, 'wb') as tmpfile:
                 pickle.dump(self, tmpfile)
             shutil.move(tmpfile_path, self.path(self.SAVE_FILE))
+            return True
         except KeyboardInterrupt:
             pass
         except Exception as e:
             print 'Caught %s while saving job: %s' % (type(e).__name__, e)
+        return False
 
