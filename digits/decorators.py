@@ -9,15 +9,18 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         djsession_id = request.cookies.get("sessionid")
+        print "$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+        print djsession_id
         if djsession_id is None:
-            return redirect("/")
+            return redirect("http://127.0.0.1:8000/dashboard", code = 302)
 
-        key = get_session_prefixed(djsession_id)
-        session_store = SessionStore(redis_conn, key)
+        # key = get_session_prefixed(djsession_id)
+        key = djsession_id
+        session_store = SessionStore(key)
         auth = session_store.load()
 
         if not auth:
-            return redirect("/login")
+            return redirect("http://127.0.0.1:8000/dashboard", code = 302)
 
         g.user_id = str(auth.get("_auth_user_id"))
 
