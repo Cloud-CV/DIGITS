@@ -12,4 +12,5 @@ sys.path.extend(['/home/pydev/Documents/Workspaces',
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Workspaces.settings")
 from django.conf import settings
-from redis_sessions_fork.session import * 
+from redis_sessions_fork.session import SessionStore
+from digitsdb.models import Job as WorkspaceJob
