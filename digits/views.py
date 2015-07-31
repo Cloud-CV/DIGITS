@@ -3,6 +3,7 @@
 import os
 import json
 import traceback
+import requests
 
 import flask
 from werkzeug import HTTP_STATUS_CODES
@@ -17,6 +18,10 @@ import model.views
 from digits.utils import errors
 from digits.utils.routing import request_wants_json
 from digits.decorators import login_required
+from urlparse import urlparse, parse_qs
+from flask import session
+
+# user_email = requests.get("http://127.0.0.1:8000/workspace", attr={'workspace'}).json()
 
 @app.route('/index.json', methods=['GET'])
 @app.route('/', methods=['GET'])
@@ -33,6 +38,10 @@ def home():
             models: [{id, name, status},...]
         }
     """
+    workspace = parse_qs(urlparse(flask.request.url).query, keep_blank_values=True)["workspace"]
+    # print "Workspaceid is "
+    session['workspaceid'] = workspace[0]
+    # print session.get('workspaceid')
     running_datasets    = get_job_list(dataset.DatasetJob, True)
     completed_datasets  = get_job_list(dataset.DatasetJob, False)
     running_models      = get_job_list(model.ModelJob, True)
