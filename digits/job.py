@@ -10,6 +10,10 @@ import flask
 
 from digits.config import config_value
 from status import Status, StatusCls
+from django_import import *
+from django.contrib.auth.models import User
+from organizations.models import Organization
+from digitsdb.models import Job as WorkspaceJob
 
 # NOTE: Increment this everytime the pickled object changes
 PICKLE_VERSION = 1
@@ -50,6 +54,8 @@ class Job(StatusCls):
 
         # create a unique ID
         self._id = '%s-%s' % (time.strftime('%Y%m%d-%H%M%S'), os.urandom(2).encode('hex'))
+        workspace = Organization.objects.get(id = flask.session.get('workspaceid'))
+        WorkspaceJob.objects.create(job_id = self._id, workspace = workspace).save()
         self._dir = os.path.join(config_value('jobs_dir'), self._id)
         self._name = name
         self.pickver_job = PICKLE_VERSION
