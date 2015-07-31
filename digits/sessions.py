@@ -1,6 +1,6 @@
 # from django.contrib.sessions.backends.base import SessionBase
 from django_import import * 
-from redis_session_fork.session import *
+from redis_session_fork.session import SessionStore
 class SessionStore(object):
 
     # The default serializer, for now
