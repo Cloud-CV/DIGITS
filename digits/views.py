@@ -19,9 +19,8 @@ from digits.utils import errors
 from digits.utils.routing import request_wants_json
 from digits.decorators import login_required
 from urlparse import urlparse, parse_qs
-from flask import session
-
-# user_email = requests.get("http://127.0.0.1:8000/workspace", attr={'workspace'}).json()
+from django_import import *
+from digitsdb.models import Job as WorkspaceJob
 
 @app.route('/index.json', methods=['GET'])
 @app.route('/', methods=['GET'])
@@ -38,10 +37,11 @@ def home():
             models: [{id, name, status},...]
         }
     """
-    workspace = parse_qs(urlparse(flask.request.url).query, keep_blank_values=True)["workspace"]
-    # print "Workspaceid is "
-    session['workspaceid'] = workspace[0]
-    # print session.get('workspaceid')
+    try:
+        workspace = parse_qs(urlparse(flask.request.url).query, keep_blank_values=True)["workspace"]
+        flask.session['workspaceid'] = workspace[0]
+    except:
+        print flask.session.get('workspaceid', None)
     running_datasets    = get_job_list(dataset.DatasetJob, True)
     completed_datasets  = get_job_list(dataset.DatasetJob, False)
     running_models      = get_job_list(model.ModelJob, True)
@@ -94,12 +94,15 @@ def home():
                 )
 
 def get_job_list(cls, running):
+    print "SESSION IS : ", flask.session.get('workspaceid')
+    scheduler_jobs = [j._id for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running]
+    workspace_jobs = [job.job_id for job in WorkspaceJob.objects.filter(workspace__pk = str(flask.session.get('workspaceid'))) ]
+    workspace_scheduled_jobs = list(set(workspace_jobs) & set(scheduler_jobs))
     return sorted(
-            [j for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running],
+            [j for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running and j._id in workspace_scheduled_jobs],
             key=lambda j: j.status_history[0][1],
             reverse=True,
             )
-
 
 ### Jobs routes
 
