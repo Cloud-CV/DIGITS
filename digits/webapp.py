@@ -47,3 +47,6 @@ import digits.views
 
 scheduler.load_past_jobs()
 
+### Set django 
+import django 
+django.setup()
