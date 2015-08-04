@@ -7,6 +7,7 @@ import pickle
 import shutil
 
 import flask
+import hashlib
 
 from digits.config import config_value
 from status import Status, StatusCls
