@@ -6,6 +6,8 @@ import traceback
 import requests
 
 import flask
+import hashlib
+
 from werkzeug import HTTP_STATUS_CODES
 import werkzeug.exceptions
 from flask.ext.socketio import join_room, leave_room
@@ -17,10 +19,22 @@ import dataset.views
 import model.views
 from digits.utils import errors
 from digits.utils.routing import request_wants_json
+
 from digits.decorators import login_required
-from urlparse import urlparse, parse_qs
 from django_import import *
 from digitsdb.models import Job as WorkspaceJob
+from organizations.models import OrganizationUser
+from urlparse import urlparse, parse_qs
+
+from Crypto.Cipher import AES
+import base64
+MASTER_KEY="Some-long-base-key-to-use-as-encyrption-key"
+
+def decrypt_val(cipher_text):
+    dec_secret = AES.new(MASTER_KEY[:32])
+    raw_decrypted = dec_secret.decrypt(base64.b64decode(cipher_text))
+    clear_val = raw_decrypted.rstrip("\0")
+    return clear_val
 
 @app.route('/index.json', methods=['GET'])
 @app.route('/', methods=['GET'])
@@ -37,15 +51,12 @@ def home():
             models: [{id, name, status},...]
         }
     """
-    try:
-        workspace = parse_qs(urlparse(flask.request.url).query, keep_blank_values=True)["workspace"]
-        flask.session['workspaceid'] = workspace[0]
-    except:
-        print flask.session.get('workspaceid', None)
-    running_datasets    = get_job_list(dataset.DatasetJob, True)
-    completed_datasets  = get_job_list(dataset.DatasetJob, False)
-    running_models      = get_job_list(model.ModelJob, True)
-    completed_models    = get_job_list(model.ModelJob, False)
+    workspace = parse_qs(urlparse(flask.request.url).query, keep_blank_values=True)["workspace"][0].encode('ascii')
+    WORKSPACE = decrypt_val(workspace)
+    running_datasets    = get_job_list(dataset.DatasetJob, True, WORKSPACE)
+    completed_datasets  = get_job_list(dataset.DatasetJob, False, WORKSPACE)
+    running_models      = get_job_list(model.ModelJob, True, WORKSPACE)
+    completed_models    = get_job_list(model.ModelJob, False, WORKSPACE)
 
     if request_wants_json():
         return flask.jsonify({
@@ -93,13 +104,16 @@ def home():
                 completed_models    = completed_models,
                 )
 
-def get_job_list(cls, running):
-    print "SESSION IS : ", flask.session.get('workspaceid')
+def get_job_list(cls, running, *args):
+    workspace = args[0]
     scheduler_jobs = [j._id for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running]
-    workspace_jobs = [job.job_id for job in WorkspaceJob.objects.filter(workspace__pk = str(flask.session.get('workspaceid'))) ]
+    workspace_jobs = [job.job_id for job in WorkspaceJob.objects.filter(workspace__pk = str(workspace))]
     workspace_scheduled_jobs = list(set(workspace_jobs) & set(scheduler_jobs))
     return sorted(
-            [j for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running and j._id in workspace_scheduled_jobs],
+            [j for j in scheduler.jobs if isinstance(j, cls) and 
+            j.status.is_running() == running and 
+            j._id in workspace_scheduled_jobs], #and 
+            # len(OrganizationUser.objects.filter(user__email = user_email, organization__pk = flask.session.get('workspaceid'))) is 1],
             key=lambda j: j.status_history[0][1],
             reverse=True,
             )
