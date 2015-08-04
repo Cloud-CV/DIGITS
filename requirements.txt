@@ -12,3 +12,4 @@ pydot2
 Flask-SocketIO
 lmdb
 django==1.8
+hashids==0.8.4
