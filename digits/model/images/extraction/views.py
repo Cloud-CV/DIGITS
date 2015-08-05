@@ -72,6 +72,9 @@ def feature_extraction_model_create():
         if form.method.data == 'custom':
             text_format.Merge(form.custom_network.data, network)
             pretrained_model = form.custom_network_snapshot.data.strip()
+            print "~~~~~~~~~~~~~~~~"
+            print pretrained_model
+            print "~~~~~~~~~~~~~~~~"
         else:
             raise werkzeug.exceptions.BadRequest(
                     'Unrecognized method: "%s"' % form.method.data)
