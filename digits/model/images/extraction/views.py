@@ -68,17 +68,19 @@ def feature_extraction_model_create():
 
         network = caffe_pb2.NetParameter()
         pretrained_model = None
-        
+       
+        try:
+            with open(form.custom_network.data, 'r') as deploy_file:
+                deploy_content = deploy_file.read()
+        except:
+            raise werkzeug.exceptions.BadRequest('File does not exist : %s' % form.custom_network.data)
+
         if form.method.data == 'custom':
-            text_format.Merge(form.custom_network.data, network)
+            text_format.Merge(deploy_content, network)
             pretrained_model = form.custom_network_snapshot.data.strip()
-            print "~~~~~~~~~~~~~~~~"
-            print pretrained_model
-            print "~~~~~~~~~~~~~~~~"
         else:
             raise werkzeug.exceptions.BadRequest(
                     'Unrecognized method: "%s"' % form.method.data)
-
         
         job.tasks.append(
                 tasks.CaffeLoadModelTask(

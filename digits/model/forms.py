@@ -261,7 +261,12 @@ class PretrainedModelForm(Form):
     def validate_NetParameter(form, field):
         pb = caffe_pb2.NetParameter()
         try:
-            text_format.Merge(field.data, pb)
+            with open(field.data, 'r') as field_file:
+                field_data_content = field_file.read()
+        except:
+            raise validators.ValidationError('File not found : %s' % field.data)
+        try:
+            text_format.Merge(field_data_content, pb)
         except text_format.ParseError as e:
             raise validators.ValidationError('Not a valid NetParameter: %s' % e)
 
@@ -277,7 +282,7 @@ class PretrainedModelForm(Form):
             )
 
     # The options for this get set in the view (since they are dependent on the data type)
-    custom_network = wtforms.TextAreaField('Custom Network',
+    custom_network = wtforms.StringField('Custom Network',
             validators = [
                 validate_required_iff(method='custom'),
                 validate_NetParameter,
