@@ -9,7 +9,10 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         djsession_id = request.cookies.get("sessionid")
+        print djsession_id
         if djsession_id is None:
+            print "Out from 1st condition"
+            print djsession_id
             return redirect("http://127.0.0.1:8000/accounts/login", code = 302)
 
         # key = get_session_prefixed(djsession_id)
@@ -20,7 +23,7 @@ def login_required(f):
         if not auth:
             return redirect("http://127.0.0.1:8000/accounts/login", code = 302)
 
-        g.user_id = str(auth.get("_auth_user_id"))
+        g.user_id = str(auth.get("sessionid"))
         return f(*args, **kwargs)
     return decorated_function
 

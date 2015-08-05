@@ -6,10 +6,13 @@ from flask.ext.socketio import SocketIO
 from digits import utils
 from config import config_value
 import digits.scheduler
+import sys
+
+sys.path.append('/root/digits/digits/')
 
 ### Create Flask, Scheduler and SocketIO objects
-
-app = flask.Flask(__name__, static_url_path = "/digits_static")
+SESSION_COOKIE_NAME = 'sessionid'
+app = flask.Flask(__name__)
 app.config['DEBUG'] = False
 # Disable CSRF checking in WTForms
 app.config['WTF_CSRF_ENABLED'] = False

@@ -7,11 +7,14 @@ from digits.webapp import app, scheduler, autodoc
 from digits.utils.routing import request_wants_json
 import images.views
 import images as dataset_images
+from digits.views import APPEND_URL
 
 NAMESPACE = '/datasets/'
 
-@app.route(NAMESPACE + '<job_id>.json', methods=['GET'])
-@app.route(NAMESPACE + '<job_id>', methods=['GET'])
+global APPEND_URL
+
+@app.route(NAMESPACE + '<job_id>.json' + APPEND_URL, methods=['GET'])
+@app.route(NAMESPACE + '<job_id>'+ APPEND_URL, methods=['GET'])
 @autodoc(['datasets', 'api'])
 def datasets_show(job_id):
     """
@@ -34,7 +37,7 @@ def datasets_show(job_id):
         else:
             raise werkzeug.exceptions.BadRequest('Invalid job type')
 
-@app.route(NAMESPACE + 'summary', methods=['GET'])
+@app.route(NAMESPACE + 'summary'+ APPEND_URL, methods=['GET'])
 @autodoc('datasets')
 def dataset_summary():
     """

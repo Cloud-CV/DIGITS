@@ -19,6 +19,26 @@ class SessionStore(object):
         else:
             return {}
 
+    def exists(self, session_key):
+        return self._conn.exists(session_key)
+
+    def _decode(self, session_data):
+        """
+        Decodes the Django session
+        :param session_data:
+        :return: decoded data
+        """
+        encoded_data = base64.b64decode(force_bytes(session_data))
+        try:
+            # Could produce ValueError if there is no ':'
+            hash, serialized = encoded_data.split(b':', 1)
+            # In the Django version of that they check for corrupted data
+            # I don't find it useful, so I'm removing it
+            return self.serializer().loads(serialized)
+        except Exception as e:
+            # ValueError, SuspiciousOperation, unpickling exceptions. If any of
+            # these happen, return an empty dictionary (i.e., empty session).
+            return {}
 '''
     We only need the load method because it’s a read-only implementation of the storage.
     That means you can’t logout directly from Flask; instead, you might want to 
@@ -26,24 +46,3 @@ class SessionStore(object):
     methods are commented.
 
 ''' 
-    # def exists(self, session_key):
-    #     return self._conn.exists(session_key)
-
-
-    # def _decode(self, session_data):
-    #     """
-    #     Decodes the Django session
-    #     :param session_data:
-    #     :return: decoded data
-    #     """
-    #     encoded_data = base64.b64decode(force_bytes(session_data))
-    #     try:
-    #         # Could produce ValueError if there is no ':'
-    #         hash, serialized = encoded_data.split(b':', 1)
-    #         # In the Django version of that they check for corrupted data
-    #         # I don't find it useful, so I'm removing it
-    #         return self.serializer().loads(serialized)
-    #     except Exception as e:
-    #         # ValueError, SuspiciousOperation, unpickling exceptions. If any of
-    #         # these happen, return an empty dictionary (i.e., empty session).
-    #         return {}

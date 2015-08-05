@@ -23,12 +23,18 @@ from digits.utils.routing import request_wants_json
 from digits.decorators import login_required
 from django_import import *
 from digitsdb.models import Job as WorkspaceJob
-from organizations.models import OrganizationUser
+from organizations.models import OrganizationUser, Organization
 from urlparse import urlparse, parse_qs
-
+# from flask.ext.login import login_required, current_user
+import sys
 from Crypto.Cipher import AES
 import base64
 MASTER_KEY="Some-long-base-key-to-use-as-encyrption-key"
+
+sys.append('/root/digits/digits')
+WORKSPACE_ID = '0'
+
+APPEND_URL = '?workspace='+WORKSPACE_ID
 
 def decrypt_val(cipher_text):
     dec_secret = AES.new(MASTER_KEY[:32])
@@ -52,11 +58,15 @@ def home():
         }
     """
     workspace = parse_qs(urlparse(flask.request.url).query, keep_blank_values=True)["workspace"][0].encode('ascii')
-    WORKSPACE = decrypt_val(workspace)
-    running_datasets    = get_job_list(dataset.DatasetJob, True, WORKSPACE)
-    completed_datasets  = get_job_list(dataset.DatasetJob, False, WORKSPACE)
-    running_models      = get_job_list(model.ModelJob, True, WORKSPACE)
-    completed_models    = get_job_list(model.ModelJob, False, WORKSPACE)
+    global WORKSPACE_ID
+    WORKSPACE_ID = decrypt_val(workspace)
+    WORKSPACE_NAME = Organization.objects.get(pk = str(WORKSPACE_ID)).name
+    global APPEND_URL
+    APPEND_URL = '?workspace='+WORKSPACE_ID
+    running_datasets    = get_job_list(dataset.DatasetJob, True, WORKSPACE_ID)
+    completed_datasets  = get_job_list(dataset.DatasetJob, False, WORKSPACE_ID)
+    running_models      = get_job_list(model.ModelJob, True, WORKSPACE_ID)
+    completed_models    = get_job_list(model.ModelJob, False, WORKSPACE_ID)
 
     if request_wants_json():
         return flask.jsonify({
@@ -102,6 +112,8 @@ def home():
                 new_model_options   = new_model_options,
                 running_models      = running_models,
                 completed_models    = completed_models,
+                workspace_id = WORKSPACE_ID,
+                workspace_name = WORKSPACE_NAME,
                 )
 
 def get_job_list(cls, running, *args):
@@ -120,7 +132,7 @@ def get_job_list(cls, running, *args):
 
 ### Jobs routes
 
-@app.route('/jobs/<job_id>', methods=['GET'])
+@app.route('/jobs/<job_id>' + APPEND_URL, methods=['GET'])
 @autodoc('jobs')
 def show_job(job_id):
     """
@@ -137,7 +149,7 @@ def show_job(job_id):
     else:
         raise werkzeug.exceptions.BadRequest('Invalid job type')
 
-@app.route('/jobs/<job_id>', methods=['PUT'])
+@app.route('/jobs/<job_id>' + APPEND_URL, methods=['PUT'])
 @autodoc('jobs')
 def edit_job(job_id):
     """
@@ -151,9 +163,9 @@ def edit_job(job_id):
     job._name = flask.request.form['job_name']
     return 'Changed job name from "%s" to "%s"' % (old_name, job.name())
 
-@app.route('/datasets/<job_id>/status', methods=['GET'])
-@app.route('/models/<job_id>/status', methods=['GET'])
-@app.route('/jobs/<job_id>/status', methods=['GET'])
+@app.route('/datasets/<job_id>/status' + APPEND_URL, methods=['GET'])
+@app.route('/models/<job_id>/status' + APPEND_URL, methods=['GET'])
+@app.route('/jobs/<job_id>/status' + APPEND_URL, methods=['GET'])
 @autodoc('jobs')
 def job_status(job_id):
     """
@@ -170,9 +182,9 @@ def job_status(job_id):
         result['type'] = job.job_type()
     return json.dumps(result)
 
-@app.route('/datasets/<job_id>', methods=['DELETE'])
-@app.route('/models/<job_id>', methods=['DELETE'])
-@app.route('/jobs/<job_id>', methods=['DELETE'])
+@app.route('/datasets/<job_id>' + APPEND_URL, methods=['DELETE'])
+@app.route('/models/<job_id>' + APPEND_URL, methods=['DELETE'])
+@app.route('/jobs/<job_id>' + APPEND_URL, methods=['DELETE'])
 @autodoc('jobs')
 def delete_job(job_id):
     """
@@ -190,9 +202,9 @@ def delete_job(job_id):
     except errors.DeleteError as e:
         raise werkzeug.exceptions.Forbidden(str(e))
 
-@app.route('/datasets/<job_id>/abort', methods=['POST'])
-@app.route('/models/<job_id>/abort', methods=['POST'])
-@app.route('/jobs/<job_id>/abort', methods=['POST'])
+@app.route('/datasets/<job_id>/abort' + APPEND_URL, methods=['POST'])
+@app.route('/models/<job_id>/abort' + APPEND_URL, methods=['POST'])
+@app.route('/jobs/<job_id>/abort' + APPEND_URL, methods=['POST'])
 @autodoc('jobs')
 def abort_job(job_id):
     """

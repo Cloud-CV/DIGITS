@@ -10,6 +10,7 @@ from digits.webapp import app, scheduler, autodoc
 from digits.dataset import tasks
 from forms import ImageClassificationDatasetForm
 from job import ImageClassificationDatasetJob
+from digits.views import APPEND_URL
 
 NAMESPACE = '/datasets/images/classification'
 
@@ -203,7 +204,7 @@ def from_files(job, form):
                 )
 
 
-@app.route(NAMESPACE + '/new', methods=['GET'])
+@app.route(NAMESPACE + '/new' + APPEND_URL, methods=['GET'])
 @autodoc('datasets')
 def image_classification_dataset_new():
     """
@@ -213,7 +214,7 @@ def image_classification_dataset_new():
     return flask.render_template('datasets/images/classification/new.html', form=form)
 
 @app.route(NAMESPACE + '.json', methods=['POST'])
-@app.route(NAMESPACE, methods=['POST'])
+@app.route(NAMESPACE + APPEND_URL, methods=['POST'])
 @autodoc(['datasets', 'api'])
 def image_classification_dataset_create():
     """

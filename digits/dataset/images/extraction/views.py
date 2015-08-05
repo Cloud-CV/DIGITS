@@ -52,7 +52,7 @@ def from_files(job, form):
                 )
             )
 
-@app.route(NAMESPACE + '/new', methods=['GET'])
+@app.route(NAMESPACE + '/new' + APPEND_URL, methods=['GET'])
 @autodoc('datasets')
 def feature_extraction_dataset_new():
     """
@@ -62,7 +62,7 @@ def feature_extraction_dataset_new():
     return flask.render_template('datasets/images/extraction/new.html', form=form)
 
 @app.route(NAMESPACE + '.json', methods=['POST'])
-@app.route(NAMESPACE, methods=['POST'])
+@app.route(NAMESPACE + APPEND_URL, methods=['POST'])
 @autodoc(['datasets', 'api'])
 def feature_extraction_dataset_create():
     """
