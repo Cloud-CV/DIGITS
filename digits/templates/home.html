@@ -17,7 +17,7 @@ function deleteJob(job_id) {
             'Are you sure you want to delete this job?<br><br>All related files will be permanently removed.',
             function(result) {
                 if (result)
-                    $.ajax('/jobs/' + job_id ,
+                    $.ajax('/jobs/' + job_id+'?workspace={{ workspace.workspace_hash }}' ,
                         {type: "DELETE"})
                     .done(function() {
                         window.location.reload(1);
