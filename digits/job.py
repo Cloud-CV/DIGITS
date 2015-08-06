@@ -46,17 +46,17 @@ class Job(StatusCls):
                     task.detect_snapshots()
             return job
 
-    def __init__(self, name):
+    def __init__(self, name, workspace):
         """
         Arguments:
         name -- name of this job
+        workspace -- name of workspace to which the new job belongs to
         """
         super(Job, self).__init__()
 
         # create a unique ID
         self._id = '%s-%s' % (time.strftime('%Y%m%d-%H%M%S'), os.urandom(2).encode('hex'))
-        # print "YAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", WORKSPACE
-        # workspace = Organization.objects.get(id = WORKSPACE)
+        workspace = Organization.objects.get(id = workspace['workspace_id'])
         WorkspaceJob.objects.create(job_id = self._id, workspace = workspace).save()
         self._dir = os.path.join(config_value('jobs_dir'), self._id)
         self._name = name
