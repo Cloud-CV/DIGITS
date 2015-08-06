@@ -18,7 +18,7 @@ class ImageDatasetJob(DatasetJob):
         """
         super(ImageDatasetJob, self).__init__(**kwargs)
         self.pickver_job_dataset_image = PICKLE_VERSION
-
+        
         self.image_dims = image_dims
         self.resize_mode = resize_mode
 

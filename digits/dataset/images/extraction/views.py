@@ -10,7 +10,7 @@ from digits.webapp import app, scheduler, autodoc
 from digits.dataset import tasks
 from forms import FeatureExtractionDatasetForm
 from job import FeatureExtractionDatasetJob
-
+from digits.base_workspace import *
 NAMESPACE = '/datasets/images/extraction'
 
 def from_files(job, form):
@@ -52,17 +52,18 @@ def from_files(job, form):
                 )
             )
 
-@app.route(NAMESPACE + '/new' + APPEND_URL, methods=['GET'])
+@app.route(NAMESPACE + '/new', methods=['GET'])
 @autodoc('datasets')
 def feature_extraction_dataset_new():
     """
     Returns a form for a new FeatureExtractionDatasetJob
     """
+    workspace = get_workspace_details(flask.request.url)
     form = FeatureExtractionDatasetForm()
-    return flask.render_template('datasets/images/extraction/new.html', form=form)
+    return flask.render_template('datasets/images/extraction/new.html', form=form, workspace = workspace)
 
 @app.route(NAMESPACE + '.json', methods=['POST'])
-@app.route(NAMESPACE + APPEND_URL, methods=['POST'])
+@app.route(NAMESPACE, methods=['POST'])
 @autodoc(['datasets', 'api'])
 def feature_extraction_dataset_create():
     """
@@ -70,12 +71,13 @@ def feature_extraction_dataset_create():
 
     Returns JSON when requested: {job_id,name,status} or {errors:[]}
     """
+    workspace = get_workspace_details(flask.request.url)
     form = FeatureExtractionDatasetForm()
     if not form.validate_on_submit():
         if request_wants_json():
             return flask.jsonify({'errors': form.errors}), 400
         else:
-            return flask.render_template('datasets/images/extraction/new.html', form=form), 400
+            return flask.render_template('datasets/images/extraction/new.html', form=form, workspace = workspace), 400
 
     job = None
     try:
@@ -86,7 +88,8 @@ def feature_extraction_dataset_create():
                     int(form.resize_width.data),
                     int(form.resize_channels.data),
                     ),
-                resize_mode = form.resize_mode.data
+                resize_mode = form.resize_mode.data,
+                workspace = workspace,
                 )
 
         #if form.method.data == 'folder':
@@ -99,16 +102,16 @@ def feature_extraction_dataset_create():
         if request_wants_json():
             return flask.jsonify(job.json_dict())
         else:
-            return flask.redirect(flask.url_for('datasets_show', job_id=job.id()))
+            return flask.redirect(flask.url_for('datasets_show', job_id=job.id())+'?workspace='+workspace['workspace_hash'])
 
     except:
         if job:
             scheduler.delete_job(job)
         raise
 
-def show(job):
+def show(job, *args):
     """
     Called from digits.dataset.views.datasets_show()
     """
-    return flask.render_template('datasets/images/extraction/show.html', job=job)
+    return flask.render_template('datasets/images/extraction/show.html', job=job, workspace = workspace)
 

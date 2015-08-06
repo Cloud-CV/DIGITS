@@ -11,11 +11,10 @@ from digits import utils
 from digits.webapp import app, autodoc
 import classification.views
 import extraction.views
-import digits.views.APPEND_URL
 
 NAMESPACE = '/datasets/images'
 
-@app.route(NAMESPACE + '/resize-example' + APPEND_URL, methods=['POST'])
+@app.route(NAMESPACE + '/resize-example', methods=['POST'])
 @autodoc('datasets')
 def image_dataset_resize_example():
     """
