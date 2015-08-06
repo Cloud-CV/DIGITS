@@ -9,7 +9,7 @@ Feature Extraction Model
 {% endblock %}
 
 {% block nav %}
-<li class="active"><a href="{{url_for('feature_extraction_model_new')}}">New Model</a></li>
+<li class="active"><a href="{{url_for('feature_extraction_model_new')}}?workspace={{ workspace.workspace_hash }}">New Model</a></li>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +17,7 @@ Feature Extraction Model
     <h1>New Feature Extraction Model</h1>
 </div>
 
-<form id="model-form" action="{{url_for('feature_extraction_model_create')}}" enctype="multipart/form-data" method="post">
+<form id="model-form" action="{{url_for('feature_extraction_model_create')}}?workspace={{ workspace.workspace_hash }}" enctype="multipart/form-data" method="post">
     {{ form.hidden_tag() }}
 
     {% if form.errors %}

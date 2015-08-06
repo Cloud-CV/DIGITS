@@ -23,7 +23,7 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
-            <a class="navbar-brand" href="/">{{ workspace_name }} DIGITS</a>
+            <a class="navbar-brand" href="/?workspace={{ workspace.workspace_hash }}">{{ workspace.workspace_name }} DIGITS</a>
         </div>
         <ul class="nav navbar-nav">
             {% block nav %}
