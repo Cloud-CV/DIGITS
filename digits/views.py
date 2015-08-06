@@ -168,11 +168,14 @@ def delete_job(job_id):
     Deletes a job
     """
     job = scheduler.get_job(job_id)
+    workspace = get_workspace_details(flask.request.url)
+
     if job is None:
         raise werkzeug.exceptions.NotFound('Job not found')
 
     try:
         if scheduler.delete_job(job_id):
+            delete_job_from_workspace(job_id, workspace)
             return 'Job deleted.'
         else:
             raise werkzeug.exceptions.Forbidden('Job not deleted')
