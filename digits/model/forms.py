@@ -279,7 +279,6 @@ class PretrainedModelForm(Form):
     method = wtforms.SelectField(u'Network type',
             choices = [
                 ('custom', 'Custom network'),
-                ('caffezoo', 'Caffe Zoo network'),
                 ],
             default='custom',
             )
@@ -307,5 +306,9 @@ class PretrainedModelForm(Form):
             )
 
     gist_id = wtforms.StringField('Gist ID',
+            validators = []
+            )
+    
+    caffezoo_model = wtforms.StringField('Path to CaffeZoo Model Folder',
             validators = []
             )
