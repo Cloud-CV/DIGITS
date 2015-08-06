@@ -28,6 +28,7 @@ from digits.model import tasks
 from forms import DummyFeatureExtractionModelForm
 from job import FeatureExtractionModelJob
 from digits.status import Status
+from digits.base_workspace import *
 
 NAMESPACE   = '/models/images/extraction'
 
@@ -37,9 +38,11 @@ def feature_extraction_model_new():
     """
     Return a form for a new ImageClassificationModelJob for feature extraction.
     """
+    workspace = get_workspace_details(flask.request.url)
     form = DummyFeatureExtractionModelForm()
     return flask.render_template('models/images/extraction/new.html',
             form = form,
+            workspace = workspace,
             )
 
 @app.route(NAMESPACE + '.json', methods=['POST'])
@@ -52,13 +55,14 @@ def feature_extraction_model_create():
     Returns JSON when requested: {job_id,name,status} or {errors:[]}
     """
     form = DummyFeatureExtractionModelForm()
-
+    workspace = get_workspace_details(flask.request.url)
     if not form.validate_on_submit():
         if request_wants_json():
             return flask.jsonify({'errors': form.errors}), 400
         else:
             return flask.render_template('models/images/extraction/new.html',
                     form = form,
+                    workspace = workspace,
                     ), 400
 
     datasetJob = scheduler.get_job(get_dummy_dataset_id())
@@ -71,6 +75,7 @@ def feature_extraction_model_create():
         job = FeatureExtractionModelJob(
                 name        = form.model_name.data,
                 dataset_id  = datasetJob.id(),
+                workspace = workspace,
                 )
 
         network = caffe_pb2.NetParameter()
@@ -110,18 +115,18 @@ def feature_extraction_model_create():
         if request_wants_json():
             return flask.jsonify(job.json_dict())
         else:
-            return flask.redirect(flask.url_for('models_show', job_id=job.id()))
+            return flask.redirect(flask.url_for('models_show', job_id=job.id())+'?workspace='+workspace['workspace_hash'])
 
     except:
         if job:
             scheduler.delete_job(job)
         raise
 
-def show(job):
+def show(job, *args):
     """
     Called from digits.model.views.models_show()
     """
-    return flask.render_template('models/images/extraction/show.html', job=job)
+    return flask.render_template('models/images/extraction/show.html', job=job, workspace = args[0])
 
 @app.route(NAMESPACE + '/large_graph', methods=['GET'])
 @autodoc('models')
@@ -130,8 +135,8 @@ def feature_extraction_model_large_graph():
     Show the loss/accuracy graph, but bigger
     """
     job = job_from_request()
-
-    return flask.render_template('models/images/extraction/large_graph.html', job=job)
+    workspace = get_workspace_details(flask.request.url)
+    return flask.render_template('models/images/extraction/large_graph.html', job=job, workspace = workspace)
 
 @app.route(NAMESPACE + '/classify_one.json', methods=['POST'])
 @app.route(NAMESPACE + '/classify_one', methods=['POST', 'GET'])
@@ -143,6 +148,7 @@ def feature_extraction_model_classify_one():
     Returns JSON when requested: {predictions: {category: confidence,...}}
     """
     job = job_from_request()
+    workspace = get_workspace_details(flask.request.url)
 
     image = None
     if 'image_url' in flask.request.form and flask.request.form['image_url']:
@@ -238,6 +244,7 @@ def feature_extraction_model_classify_one():
                 image_src       = utils.image.embed_image_html(image),
                 predictions     = predictions,
                 visualizations  = visualizations,
+                workspace = workspace,
                 )
 
 @app.route(NAMESPACE + '/classify_many.json', methods=['POST'])
@@ -250,6 +257,7 @@ def feature_extraction_model_classify_many():
     Returns JSON when requested: {classifications: {filename: [[category,confidence],...],...}}
     """
     job = job_from_request()
+    workspace = get_workspace_details(flask.request.url)
 
     image_list = flask.request.files['image_list']
     if not image_list:
@@ -383,6 +391,7 @@ def feature_extraction_model_classify_many():
         return flask.render_template('models/images/extraction/classify_many.html',
                 paths=paths,
                 classifications=classifications,
+                workspace = workspace,
                 )
 
 @app.route(NAMESPACE + '/top_n', methods=['POST'])
@@ -392,6 +401,7 @@ def extraction_model_top_n():
     Classify many images and show the top N images per category by confidence
     """
     job = job_from_request()
+    workspace = get_workspace_details(flask.request.url)
 
     image_list = flask.request.files.get['image_list']
     if not image_list:
@@ -465,6 +475,7 @@ def extraction_model_top_n():
     return flask.render_template('models/images/extraction/top_n.html',
             job=job,
             results=results,
+            workspace = workspace,
             )
 
 def get_dummy_dataset_id():

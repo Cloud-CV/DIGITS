@@ -23,6 +23,7 @@ from digits.webapp import app, scheduler, autodoc
 from digits.utils.routing import request_wants_json
 import images.views
 import images as model_images
+from digits.base_workspace import *
 
 NAMESPACE = '/models/'
 
@@ -37,6 +38,8 @@ def models_show(job_id):
         {id, name, directory, status, snapshots: [epoch,epoch,...]}
     """
     job = scheduler.get_job(job_id)
+    workspace = get_workspace_details(flask.request.url)
+
     if job is None:
         raise werkzeug.exceptions.NotFound('Job not found')
 
@@ -44,9 +47,9 @@ def models_show(job_id):
         return flask.jsonify(job.json_dict(True))
     else:
         if isinstance(job, model_images.ImageClassificationModelJob):
-            return model_images.classification.views.show(job)
+            return model_images.classification.views.show(job, workspace)
         elif isinstance(job, model_images.FeatureExtractionModelJob):
-            return model_images.extraction.views.show(job)
+            return model_images.extraction.views.show(job, workspace)
         else:
             raise werkzeug.exceptions.BadRequest('Invalid job type')
 
