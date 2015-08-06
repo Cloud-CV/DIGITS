@@ -20,7 +20,7 @@ class FeatureExtractionModelJob(ImagePretrainedModelJob):
 
     @override
     def job_type(self):
-        return 'Feature Extraction Model'
+        return 'Pretrained CaffeModel'
 
     @override
     def download_files(self, epoch=-1):

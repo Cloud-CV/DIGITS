@@ -259,6 +259,8 @@ class PretrainedModelForm(Form):
             raise validators.ValidationError("Selected job doesn't exist. Maybe it was deleted by another user.")
 
     def validate_NetParameter(form, field):
+        if form.gist_id.data:
+            return
         pb = caffe_pb2.NetParameter()
         try:
             with open(field.data, 'r') as field_file:
@@ -277,6 +279,7 @@ class PretrainedModelForm(Form):
     method = wtforms.SelectField(u'Network type',
             choices = [
                 ('custom', 'Custom network'),
+                ('caffezoo', 'Caffe Zoo network'),
                 ],
             default='custom',
             )
@@ -284,7 +287,6 @@ class PretrainedModelForm(Form):
     # The options for this get set in the view (since they are dependent on the data type)
     custom_network = wtforms.StringField('Custom Network',
             validators = [
-                validate_required_iff(method='custom'),
                 validate_NetParameter,
                 ]
             )
@@ -302,4 +304,8 @@ class PretrainedModelForm(Form):
             validators = [
                 validators.DataRequired()
                 ]
+            )
+
+    gist_id = wtforms.StringField('Gist ID',
+            validators = []
             )

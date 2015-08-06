@@ -23,6 +23,15 @@
             </dl>
         </div>
     </div>
+    <div class="col-sm-6">
+        <div class="well">
+            <h4 class='text-center'>Model Meta Data</h4>
+            {% for ele in meta_data %}
+                <b>{{ ele }}</b> : {{meta_data[ele]}}
+                <br/>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 <div class="row">
     <div class="col-sm-12">

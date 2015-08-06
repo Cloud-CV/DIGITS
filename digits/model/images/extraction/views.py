@@ -65,19 +65,53 @@ def feature_extraction_model_create():
         job = FeatureExtractionModelJob(
                 name = form.model_name.data,
                 )
-
         network = caffe_pb2.NetParameter()
         pretrained_model = None
        
+        if form.gist_id.data:
+            gist_id = form.gist_id.data
+            import subprocess
+
+            # Stores the gist in DIGITS_HOME/pretrained_model_gist/gist_id/gist_id_master folder.
+            command = './scripts/download_model_from_gist.sh '+gist_id
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process.wait()
+            for line in process.stdout:
+                print line,
+            print "Gist successfully downloaded"
+
+            gist_location = './pretrained_models/'+gist_id+'/'+gist_id+'-master'
+            # Now download the .caffemodel file from the gist readme.
+            command= './scripts/download_model_binary.py '+gist_location
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process.wait()
+            for line in process.stdout:
+                print line,
+            if not process.returncode == 1:
+                print "Caffe model successfully downloaded from the caffe zoo."
+            else:
+                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file')
+            
+            for filename in os.listdir(gist_location):
+                if filename.endswith('.caffemodel'):
+                    pretrained_model = filename
+
+            if not pretrained_model:
+                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel from gist! : %s' % gist_id)
+        else:
+            try:
+                pretrained_model = form.custom_network_snapshot.data.strip()
+            except:
+                raise werkzeug.exceptions.BadRequest('File does not exist : %s' % form.custom_network.data)
+
         try:
             with open(form.custom_network.data, 'r') as deploy_file:
                 deploy_content = deploy_file.read()
         except:
-            raise werkzeug.exceptions.BadRequest('File does not exist : %s' % form.custom_network.data)
+            raisewerkzeug.exceptions.BadRequest('deploy.prototxt file does not exist : %s' % form.custom_network.data)
 
         if form.method.data == 'custom':
             text_format.Merge(deploy_content, network)
-            pretrained_model = form.custom_network_snapshot.data.strip()
         else:
             raise werkzeug.exceptions.BadRequest(
                     'Unrecognized method: "%s"' % form.method.data)
@@ -107,7 +141,26 @@ def show(job):
     """
     Called from digits.model.views.models_show()
     """
-    return flask.render_template('models/images/extraction/show.html', job=job)
+    import caffe
+    
+    job_id = job.id()
+    model_file = './digits/jobs/'+job_id+'/snapshot_iter_1.caffemodel'
+    prototxt_file = './digits/jobs/'+job_id+'/deploy.prototxt'
+
+    meta_data = {}
+    try:
+        net = caffe.Net(prototxt_file, model_file, caffe.TEST)
+        meta_data['InputDimensions'] = net.blobs['data'].data.shape
+        meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
+    except:
+        # wait for the model to be loaded onto memory.
+        import time
+        time.sleep(2)
+        net = caffe.Net(prototxt_file, model_file, caffe.TEST)
+        meta_data['InputDimensions'] = net.blobs['data'].data.shape
+        meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
+
+    return flask.render_template('models/images/extraction/show.html', job=job, meta_data=meta_data)
 
 @app.route(NAMESPACE + '/large_graph', methods=['GET'])
 @autodoc('models')

@@ -5,7 +5,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Feature Extraction Model
+Loading Pretrained CaffeModel
 {% endblock %}
 
 {% block nav %}
@@ -79,7 +79,20 @@ Feature Extraction Model
                                 data-container="body"
                                 title="Path to pretrained model file. Only edit this field if you understand how fine-tuning works in caffe"
                             ></span>
-
+                        </div>
+                    </div>
+                    <hr/>
+                    <h3> OR </h3>
+                    <hr/>
+                    <div class="form-group{{' has-error' if form.gist_id.errors}}">
+                        {{form.gist_id.label}}
+                        <div class="input-group">
+                            {{form.gist_id(class='form-control')}}
+                            <span name="pretrained_model_gist_explanation"
+                                class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Gist ID of the pretrained model from the caffezoo"
+                            ></span>
                         </div>
                     </div>
                 </div>
