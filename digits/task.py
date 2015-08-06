@@ -193,7 +193,7 @@ class Task(StatusCls):
         self.status = Status.RUN
 
         unrecognized_output = []
-
+        print args
         p = subprocess.Popen(args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,

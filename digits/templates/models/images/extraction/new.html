@@ -14,7 +14,7 @@ Loading Pretrained CaffeModel
 
 {% block content %}
 <div class="page-header">
-    <h1>New Feature Extraction Model</h1>
+    <h1>Loading Pretrained Model</h1>
 </div>
 
 <form id="model-form" action="{{url_for('feature_extraction_model_create')}}" enctype="multipart/form-data" method="post">
@@ -38,9 +38,9 @@ Loading Pretrained CaffeModel
         <div class="col-sm-8">
             <h3>Load Network</h3>
             <ul class="nav nav-tabs" id="network-tabs">
-            	<li class="active"><a href="#network-tab-custom" data-toggle="tab">from File</a></li>
-                <li><a href="#network-tab-gist" data-toggle="tab">from Gist</a></li>
-                <li><a href="#network-tab-zoo" data-toggle="tab">from CaffeZoo</a></li>
+            	<li class="active"><a href="#network-tab-custom" data-toggle="tab">From File</a></li>
+                <li><a href="#network-tab-gist" data-toggle="tab">From Gist</a></li>
+                <li><a href="#network-tab-zoo" data-toggle="tab">From CaffeZoo</a></li>
             </ul>
             <div class="tab-content well">
             	<div id="network-tab-custom" class="tab-pane active">

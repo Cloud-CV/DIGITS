@@ -1194,7 +1194,6 @@ class CaffeLoadModelTask(LoadModelTask):
         if hasattr(self, '_transformer') and self._transformer is not None:
             return self._transformer
 
-        # TODO : get channels somehow.
         data_shape = (1, self.channels)
         if self.crop_size:
             data_shape += (self.crop_size, self.crop_size)
@@ -1206,28 +1205,9 @@ class CaffeLoadModelTask(LoadModelTask):
                 )
         t.set_transpose('data', (2,0,1)) # transpose to (channels, height, width)
 
-        #if self.dataset.image_dims[2] == 3 and \
-        #        self.dataset.train_db_task().image_channel_order == 'BGR':
-            # channel swap
-            # XXX see issue #59
+        # channel swap
+        # XXX see issue #59
         t.set_channel_swap('data', (2,1,0))
-
-        #if self.use_mean:
-            # set mean
-        #    with open(self.dataset.path(self.dataset.train_db_task().mean_file)) as f:
-        #        blob = caffe_pb2.BlobProto()
-        #        blob.MergeFromString(f.read())
-        #        pixel = np.reshape(blob.data,
-        #                (
-        #                    self.dataset.image_dims[2],
-        #                    self.dataset.image_dims[0],
-        #                    self.dataset.image_dims[1],
-        #                    )
-        #                ).mean(1).mean(1)
-        #        t.set_mean('data', pixel)
-
-        #t.set_raw_scale('data', 255) # [0,255] range instead of [0,1]
 
         self._transformer = t
         return self._transformer
-

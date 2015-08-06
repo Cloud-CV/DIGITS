@@ -259,7 +259,7 @@ class PretrainedModelForm(Form):
             raise validators.ValidationError("Selected job doesn't exist. Maybe it was deleted by another user.")
 
     def validate_NetParameter(form, field):
-        if form.gist_id.data:
+        if form.gist_id.data or form.caffezoo_model.data:
             return
         pb = caffe_pb2.NetParameter()
         try:
@@ -309,6 +309,6 @@ class PretrainedModelForm(Form):
             validators = []
             )
     
-    caffezoo_model = wtforms.StringField('Path to CaffeZoo Model Folder',
+    caffezoo_model = wtforms.StringField('CaffeZoo Model Name',
             validators = []
             )
