@@ -8,8 +8,6 @@ from config import config_value
 import digits.scheduler
 import sys
 
-sys.path.append('/root/digits/digits/')
-
 ### Create Flask, Scheduler and SocketIO objects
 SESSION_COOKIE_NAME = 'sessionid'
 app = flask.Flask(__name__)
