@@ -147,6 +147,11 @@ def feature_extraction_model_create():
             raise werkzeug.exceptions.BadRequest(
                     'Unrecognized method: "%s"' % form.method.data)
         
+        if form.mean_file.data:
+            mean_file = form.mean_file.data
+        else:
+            mean_file = None
+
         job.tasks.append(
                 tasks.CaffeLoadModelTask(
                     job_dir         = job.dir(),
@@ -154,6 +159,7 @@ def feature_extraction_model_create():
                     crop_size       = None,
                     channels        = None,
                     network         = network,
+                    mean_file       = mean_file,
                     )
                 )
 
@@ -223,8 +229,6 @@ def feature_extraction_model_classify_one():
             image = utils.image.load_image(outfile.name)
     else:
         raise werkzeug.exceptions.BadRequest('Must provide image_url or image_file')
-
-    # TODO : This needs to be looked into with detail. See how to get the crop size parameters.
 
     # resize image
     model_task = job.load_model_task()

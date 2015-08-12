@@ -284,13 +284,13 @@ class PretrainedModelForm(Form):
             )
 
     # The options for this get set in the view (since they are dependent on the data type)
-    custom_network = wtforms.StringField('Custom Network',
+    custom_network = wtforms.StringField('Path to network config (.protxt) file',
             validators = [
                 validate_NetParameter,
                 ]
             )
 
-    custom_network_snapshot = wtforms.TextField('Pretrained model')
+    custom_network_snapshot = wtforms.TextField('Path to pretrained model')
 
     def validate_custom_network_snapshot(form, field):
         if form.method.data == 'custom':
@@ -310,5 +310,9 @@ class PretrainedModelForm(Form):
             )
     
     caffezoo_model = wtforms.StringField('CaffeZoo Model Name',
+            validators = []
+            )
+
+    mean_file = wtforms.StringField('Path to Mean Image file (optional)',
             validators = []
             )

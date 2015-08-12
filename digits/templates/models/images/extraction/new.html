@@ -141,6 +141,17 @@ Loading Pretrained CaffeModel
                     </div>
                 </div>
             	<div>
+                    <div class="form-group{{' has-error' if form.mean_file.errors}}">
+		                {{form.mean_file.label}}
+		                <div class="input-group">
+		                    {{form.mean_file(class='form-control')}}
+		                    <span name="mean_file_explanation"
+		                        class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
+		                        data-container="body"
+		                        title="The image used to perform mean subtration in classification tasks."
+		                    ></span>
+		                </div>
+		            </div>
 		            <div class="form-group{{' has-error' if form.model_name.errors}}">
 		                {{form.model_name.label}}
 		                <div class="input-group">
