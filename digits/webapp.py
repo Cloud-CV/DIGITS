@@ -9,7 +9,6 @@ import digits.scheduler
 import sys
 
 ### Create Flask, Scheduler and SocketIO objects
-SESSION_COOKIE_NAME = 'sessionid'
 app = flask.Flask(__name__)
 app.config['DEBUG'] = False
 # Disable CSRF checking in WTForms
@@ -51,3 +50,5 @@ scheduler.load_past_jobs()
 ### Set django 
 import django 
 django.setup()
+
+app.SESSION_COOKIE_NAME = 'sessionid'
