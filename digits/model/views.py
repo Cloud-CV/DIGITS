@@ -24,12 +24,15 @@ from digits.utils.routing import request_wants_json
 import images.views
 import images as model_images
 from digits.base_workspace import *
+from digits.decorators import login_required,access_required
 
 NAMESPACE = '/models/'
 
 @app.route(NAMESPACE + '<job_id>.json', methods=['GET'])
 @app.route(NAMESPACE + '<job_id>', methods=['GET'])
 @autodoc(['models', 'api'])
+@login_required
+@access_required
 def models_show(job_id):
     """
     Show a ModelJob
@@ -55,6 +58,8 @@ def models_show(job_id):
 
 @app.route(NAMESPACE + 'customize', methods=['POST'])
 @autodoc('models')
+@login_required
+@access_required
 def models_customize():
     """
     Returns a customized file for the ModelJob based on completed form fields
@@ -92,6 +97,8 @@ def models_customize():
 
 @app.route(NAMESPACE + 'visualize-network', methods=['POST'])
 @autodoc('models')
+@login_required
+@access_required
 def models_visualize_network():
     """
     Returns a visualization of the custom network as a string of PNG data
@@ -105,6 +112,8 @@ def models_visualize_network():
 
 @app.route(NAMESPACE + 'visualize-lr', methods=['POST'])
 @autodoc('models')
+@login_required
+@access_required
 def models_visualize_lr():
     """
     Returns a JSON object of data used to create the learning rate graph
@@ -160,6 +169,8 @@ def models_visualize_lr():
 @app.route(NAMESPACE + '<job_id>/download.<extension>',
         methods=['GET', 'POST'])
 @autodoc('models')
+@login_required
+@access_required
 def models_download(job_id, extension):
     """
     Return a tarball of all files required to run the model

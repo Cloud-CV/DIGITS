@@ -29,11 +29,14 @@ from forms import DummyFeatureExtractionModelForm
 from job import FeatureExtractionModelJob
 from digits.status import Status
 from digits.base_workspace import *
+from digits.decorators import login_required, access_required
 
 NAMESPACE   = '/models/images/extraction'
 
 @app.route(NAMESPACE + '/new', methods=['GET'])
 @autodoc('models')
+@login_required
+@access_required
 def feature_extraction_model_new():
     """
     Return a form for a new ImageClassificationModelJob for feature extraction.
@@ -48,6 +51,8 @@ def feature_extraction_model_new():
 @app.route(NAMESPACE + '.json', methods=['POST'])
 @app.route(NAMESPACE, methods=['POST'])
 @autodoc(['models', 'api'])
+@login_required
+@access_required
 def feature_extraction_model_create():
     """
     Create a new ImageClassificationModelJob for feature extraction using pretrained model.
@@ -130,6 +135,8 @@ def show(job, *args):
 
 @app.route(NAMESPACE + '/large_graph', methods=['GET'])
 @autodoc('models')
+@login_required
+@access_required
 def feature_extraction_model_large_graph():
     """
     Show the loss/accuracy graph, but bigger
@@ -141,6 +148,8 @@ def feature_extraction_model_large_graph():
 @app.route(NAMESPACE + '/classify_one.json', methods=['POST'])
 @app.route(NAMESPACE + '/classify_one', methods=['POST', 'GET'])
 @autodoc(['models', 'api'])
+@login_required
+@access_required
 def feature_extraction_model_classify_one():
     """
     Classify one image and return the top 5 classifications
@@ -250,6 +259,8 @@ def feature_extraction_model_classify_one():
 @app.route(NAMESPACE + '/classify_many.json', methods=['POST'])
 @app.route(NAMESPACE + '/classify_many', methods=['POST', 'GET'])
 @autodoc(['models', 'api'])
+@login_required
+@access_required
 def feature_extraction_model_classify_many():
     """
     Classify many images and return the top 5 classifications for each
@@ -396,6 +407,8 @@ def feature_extraction_model_classify_many():
 
 @app.route(NAMESPACE + '/top_n', methods=['POST'])
 @autodoc('models')
+@login_required
+@access_required
 def extraction_model_top_n():
     """
     Classify many images and show the top N images per category by confidence
