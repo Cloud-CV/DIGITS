@@ -11,11 +11,14 @@ from digits import utils
 from digits.webapp import app, autodoc
 import classification.views
 import extraction.views
+from digits.decorators import login_required, access_required
 
 NAMESPACE = '/datasets/images'
 
 @app.route(NAMESPACE + '/resize-example', methods=['POST'])
 @autodoc('datasets')
+@login_required
+@access_required
 def image_dataset_resize_example():
     """
     Resizes the example image, and returns it as a string of png data

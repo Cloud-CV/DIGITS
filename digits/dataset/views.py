@@ -8,12 +8,15 @@ from digits.utils.routing import request_wants_json
 import images.views
 import images as dataset_images
 from digits.base_workspace import *
+from digits.decorators import login_required, access_required
 
 NAMESPACE = '/datasets/'
 
 @app.route(NAMESPACE + '<job_id>.json', methods=['GET'])
 @app.route(NAMESPACE + '<job_id>', methods=['GET'])
 @autodoc(['datasets', 'api'])
+@login_required
+@access_required
 def datasets_show(job_id):
     """
     Show a DatasetJob
@@ -38,6 +41,8 @@ def datasets_show(job_id):
 
 @app.route(NAMESPACE + 'summary', methods=['GET'])
 @autodoc('datasets')
+@login_required
+@access_required
 def dataset_summary():
     """
     Return a short HTML summary of a DatasetJob

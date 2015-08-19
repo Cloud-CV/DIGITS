@@ -11,6 +11,8 @@ from digits.dataset import tasks
 from forms import FeatureExtractionDatasetForm
 from job import FeatureExtractionDatasetJob
 from digits.base_workspace import *
+from digits.decorators import login_required, access_required
+
 NAMESPACE = '/datasets/images/extraction'
 
 def from_files(job, form):
@@ -54,6 +56,8 @@ def from_files(job, form):
 
 @app.route(NAMESPACE + '/new', methods=['GET'])
 @autodoc('datasets')
+@login_required
+@access_required
 def feature_extraction_dataset_new():
     """
     Returns a form for a new FeatureExtractionDatasetJob
@@ -65,6 +69,8 @@ def feature_extraction_dataset_new():
 @app.route(NAMESPACE + '.json', methods=['POST'])
 @app.route(NAMESPACE, methods=['POST'])
 @autodoc(['datasets', 'api'])
+@login_required
+@access_required
 def feature_extraction_dataset_create():
     """
     Creates a new FeatureExtractionDatasetJob
@@ -113,5 +119,6 @@ def show(job, *args):
     """
     Called from digits.dataset.views.datasets_show()
     """
+    workspace = args[0]
     return flask.render_template('datasets/images/extraction/show.html', job=job, workspace = workspace)
 

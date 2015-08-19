@@ -11,6 +11,7 @@ from digits.dataset import tasks
 from forms import ImageClassificationDatasetForm
 from job import ImageClassificationDatasetJob
 from digits.base_workspace import *
+from digits.decorators import login_required, access_required
 
 NAMESPACE = '/datasets/images/classification'
 
@@ -206,6 +207,8 @@ def from_files(job, form):
 
 @app.route(NAMESPACE + '/new', methods=['GET'])
 @autodoc('datasets')
+@login_required
+@access_required
 def image_classification_dataset_new():
     """
     Returns a form for a new ImageClassificationDatasetJob
@@ -218,6 +221,8 @@ def image_classification_dataset_new():
 @app.route(NAMESPACE + '.json', methods=['POST'])
 @app.route(NAMESPACE, methods=['POST'])
 @autodoc(['datasets', 'api'])
+@login_required
+@access_required
 def image_classification_dataset_create():
     """
     Creates a new ImageClassificationDatasetJob
