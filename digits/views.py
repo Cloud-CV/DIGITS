@@ -11,6 +11,7 @@ import hashlib
 from werkzeug import HTTP_STATUS_CODES
 import werkzeug.exceptions
 from flask.ext.socketio import join_room, leave_room
+from flask import request
 
 from . import dataset, model
 from config import config_value
@@ -21,6 +22,7 @@ from digits.utils import errors
 from digits.utils.routing import request_wants_json
 
 from digits.base_workspace import *
+from digits.decorators import login_required, access_required
 from urlparse import urlparse, parse_qs
 
 import base64
@@ -28,6 +30,8 @@ import base64
 @app.route('/index.json', methods=['GET'])
 @app.route('/', methods=['GET'])
 @autodoc(['home', 'api'])
+@login_required
+@access_required
 def home():
     """
     DIGITS home page
@@ -110,6 +114,8 @@ def get_job_list(cls, running, *args):
 
 @app.route('/jobs/<job_id>', methods=['GET'])
 @autodoc('jobs')
+@login_required
+@access_required
 def show_job(job_id):
     """
     Redirects to the appropriate /datasets/ or /models/ page
@@ -128,6 +134,8 @@ def show_job(job_id):
 
 @app.route('/jobs/<job_id>', methods=['PUT'])
 @autodoc('jobs')
+@login_required
+@access_required
 def edit_job(job_id):
     """
     Edit the name of a job
@@ -144,6 +152,8 @@ def edit_job(job_id):
 @app.route('/models/<job_id>/status', methods=['GET'])
 @app.route('/jobs/<job_id>/status', methods=['GET'])
 @autodoc('jobs')
+@login_required
+@access_required
 def job_status(job_id):
     """
     Returns a JSON objecting representing the status of a job
@@ -163,6 +173,8 @@ def job_status(job_id):
 @app.route('/models/<job_id>', methods=['DELETE'])
 @app.route('/jobs/<job_id>', methods=['DELETE'])
 @autodoc('jobs')
+@login_required
+@access_required
 def delete_job(job_id):
     """
     Deletes a job
@@ -186,6 +198,8 @@ def delete_job(job_id):
 @app.route('/models/<job_id>/abort', methods=['POST'])
 @app.route('/jobs/<job_id>/abort', methods=['POST'])
 @autodoc('jobs')
+@login_required
+@access_required
 def abort_job(job_id):
     """
     Aborts a running job
@@ -206,7 +220,6 @@ def handle_error(e):
     """
     Handles errors, formatting them as JSON if requested
     """
-    workspace = get_workspace_details(flask.request.url)
     error_type = type(e).__name__
     message = str(e)
     trace = None
@@ -234,7 +247,6 @@ def handle_error(e):
                 message     = message,
                 description = description,
                 trace       = trace,
-                workspace = workspace,
                 ), status_code
 
 # Register this handler for all error codes
@@ -247,6 +259,8 @@ for code in HTTP_STATUS_CODES:
 
 @app.route('/files/<path:path>', methods=['GET'])
 @autodoc('util')
+@login_required
+@access_required
 def serve_file(path):
     """
     Return a file in the jobs directory
