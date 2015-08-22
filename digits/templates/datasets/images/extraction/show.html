@@ -70,7 +70,7 @@
 <div class="panel-body">
     <dl>
         <dt>Input file{{' (before shuffling)' if task.shuffle }}</dt>
-        <dd><a href="{{url_for('serve_file', path=task.path(task.input_file, relative=True))}}">{{task.input_file}}</a></dd>
+        <dd><a href="{{url_for('serve_file', path=task.path(task.input_file, relative=True))}}?workspace={{ workspace.workspace_hash }}">{{task.input_file}}</a></dd>
         {% if task.entries_count %}
         <dt>DB Entries</dt>
         <dd>{{task.entries_count}}</dd>
