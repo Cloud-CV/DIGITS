@@ -644,7 +644,7 @@ class CaffeLoadModelTask(LoadModelTask):
                 elif layers[0] in all_network_layer_names:
                     layer = ''
                     for iter_layer in self.network.layer:
-                        if iter_layer.name == layers:
+                        if iter_layer.name == layers[0]:
                             layer = iter_layer
                             break
                     added_activations = []
@@ -1217,6 +1217,5 @@ class CaffeLoadModelTask(LoadModelTask):
             pixel = data.mean(1).mean(1)
             t.set_mean('data', pixel)                
 
-        print "transformer me aya"
         self._transformer = t
         return self._transformer
