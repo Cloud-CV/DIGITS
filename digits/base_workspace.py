@@ -8,7 +8,7 @@ import base64
 
 def get_workspace_details(url):
 	result = {}
-	print parse_qs(urlparse(str(url)).query, keep_blank_values=True)
+	# print parse_qs(urlparse(str(url)).query, keep_blank_values=True)
 	workspace_id = parse_qs(urlparse(str(url)).query, keep_blank_values=True)["workspace"][0].encode('utf-8')
 	result['workspace_id'] = base64.b64decode(workspace_id)
 	result['workspace_hash'] = str(workspace_id)
@@ -31,4 +31,3 @@ def get_user_from_session(session_key):
 		if user:
 			return user
 	return AnonymousUser()
-
