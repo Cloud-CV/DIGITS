@@ -9,6 +9,7 @@ from wtforms import validators
 from ..forms import ImageDatasetForm
 from digits import utils
 from digits.utils.forms import validate_required_iff
+# from digits.base_workspace import *
 
 class ImageClassificationDatasetForm(ImageDatasetForm):
     """
@@ -26,8 +27,14 @@ class ImageClassificationDatasetForm(ImageDatasetForm):
             )
 
     def validate_folder_path(form, field):
+        cloud_storages = ['s3','dropbox', 'google']
         if not field.data:
             pass
+        # elif any(i in field.data.lower() for i in cloud_storages):
+        #     # condition executed when user has given any of the urls related to cloudstorages
+        #     key = request.cookies.get("sessionid")
+        #     user = get_user_from_session(key)
+        #     result = requests.post('http://localhost:8000/api/download')
         elif utils.is_url(field.data):
             # make sure the URL exists
             try:

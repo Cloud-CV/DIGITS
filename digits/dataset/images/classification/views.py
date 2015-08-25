@@ -214,7 +214,6 @@ def image_classification_dataset_new():
     Returns a form for a new ImageClassificationDatasetJob
     """
     workspace = get_workspace_details(flask.request.url)
-    print "workspace is ", workspace
     form = ImageClassificationDatasetForm()
     return flask.render_template('datasets/images/classification/new.html', form=form, workspace = workspace)
 
@@ -233,6 +232,7 @@ def image_classification_dataset_create():
     form = ImageClassificationDatasetForm()
     if not form.validate_on_submit():
         if request_wants_json():
+            print "HERE IT IS "
             return flask.jsonify({'errors': form.errors}), 400
         else:
             return flask.render_template('datasets/images/classification/new.html', form=form, workspace = workspace), 400
