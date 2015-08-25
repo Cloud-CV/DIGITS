@@ -16,12 +16,10 @@ import dataset.views
 import model.views
 from digits.utils import errors
 from digits.utils.routing import request_wants_json
-# from digits.decorator import login_required
 
 @app.route('/index.json', methods=['GET'])
 @app.route('/', methods=['GET'])
 @autodoc(['home', 'api'])
-# @login_required
 def home():
     """
     DIGITS home page
@@ -56,7 +54,7 @@ def home():
                         'url': flask.url_for('image_classification_dataset_new'),
                         },
                     {
-                        'title': 'Feature Extraction',
+                        'title': 'Pretrained CaffeModel',
                         'id': 'feature-extraction',
                         'url': flask.url_for('feature_extraction_dataset_new'),
                         },
@@ -70,7 +68,7 @@ def home():
                         'url': flask.url_for('image_classification_model_new'),
                         },
                     {
-                        'title': 'Feature Extraction',
+                        'title': 'Pretrained CaffeModel',
                         'id': 'feature-extraction',
                         'url': flask.url_for('feature_extraction_model_new'),
                         },

@@ -5,7 +5,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Feature Extraction Model
+Loading Pretrained CaffeModel
 {% endblock %}
 
 {% block nav %}
@@ -14,7 +14,7 @@ Feature Extraction Model
 
 {% block content %}
 <div class="page-header">
-    <h1>New Feature Extraction Model</h1>
+    <h1>Loading Pretrained Model</h1>
 </div>
 
 <form id="model-form" action="{{url_for('feature_extraction_model_create')}}" enctype="multipart/form-data" method="post">
@@ -36,11 +36,14 @@ Feature Extraction Model
 
     <div class="row">
         <div class="col-sm-8">
+            <h3>Load Network</h3>
             <ul class="nav nav-tabs" id="network-tabs">
-            	<li class="active"><a href="#network-tab-custom" data-toggle="tab">Custom Network</a></li>
+            	<li class="active"><a href="#network-tab-custom" data-toggle="tab">From File</a></li>
+                <li><a href="#network-tab-gist" data-toggle="tab">From Gist</a></li>
+                <li><a href="#network-tab-zoo" data-toggle="tab">From CaffeZoo</a></li>
             </ul>
             <div class="tab-content well">
-            	<div id="custom-network-pane">
+            	<div id="network-tab-custom" class="tab-pane active">
                     <div class="form-group{{' has-error' if form.custom_network.errors}}">
                         {{form.custom_network.label}}
                         <div id="custom_network_explanation" style="display:none;">
@@ -79,11 +82,76 @@ Feature Extraction Model
                                 data-container="body"
                                 title="Path to pretrained model file. Only edit this field if you understand how fine-tuning works in caffe"
                             ></span>
-
+                        </div>
+                    </div>
+                </div>
+                <div id="network-tab-gist" class="tab-pane">
+                    <div class="form-group{{' has-error' if form.custom_network.errors}}">
+                        {{form.custom_network.label}}
+                        <div id="custom_network_explanation" style="display:none;">
+                            <h1>Specifying a custom network</h1>
+                            <p>
+                            You should enter a train_val network here. Some cleanup is done for you automatically:
+                            <ul>
+                                <li>
+                                The <i>num_output</i> for each <b>InnerProduct</b> layer which is a network output gets set to the number of labels in the chosen dataset.
+                                </li>
+                                <li>
+                                Any <b>Accuracy</b> layers with <i>top_k</i> &gt;= num_labels is removed automatically.
+                                </li>
+                            </ul>
+                            </p>
+                            The deploy network will be created for you automatically. Once caffe implements their "all-in-one" nets feature, you will be able to specify which layers to include in the deploy file. Until then, these things are done automatically:
+                            <ul>
+                                <li>
+                                The last <b>SoftmaxWithLoss</b> layer is replaced with a <b>Softmax</b> layer.
+                                </li>
+                                <li>
+                                All other loss layers and accuracy layers are removed.
+                                </li>
+                            </ul>
+                            </p>
+                        </div>
+                        <a href=# onClick="bootbox.alert($('#custom_network_explanation').html()); return false;"><span class="glyphicon glyphicon-question-sign"></span></a>
+                        {{form.custom_network(class='form-control', rows=10)}}
+                    </div>
+                    <div class="form-group{{' has-error' if form.gist_id.errors}}">
+                        {{form.gist_id.label}}
+                        <div class="input-group">
+                            {{form.gist_id(class='form-control')}}
+                            <span name="pretrained_model_gist_explanation"
+                                class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Gist ID of the pretrained model from the caffezoo"
+                            ></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="network-tab-zoo" class="tab-pane">
+                    <div class="form-group{{' has-error' if form.caffezoo_model.errors}}">
+                        {{form.caffezoo_model.label}}
+                        <div class="input-group">
+                            {{form.caffezoo_model(class='form-control')}}
+                            <span name="pretrained_caffezoo_model_explanation"
+                                class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Path to gist folder of the pretrained model from the caffezoo"
+                            ></span>
                         </div>
                     </div>
                 </div>
             	<div>
+                    <div class="form-group{{' has-error' if form.mean_file.errors}}">
+		                {{form.mean_file.label}}
+		                <div class="input-group">
+		                    {{form.mean_file(class='form-control')}}
+		                    <span name="mean_file_explanation"
+		                        class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
+		                        data-container="body"
+		                        title="The image used to perform mean subtration in classification tasks."
+		                    ></span>
+		                </div>
+		            </div>
 		            <div class="form-group{{' has-error' if form.model_name.errors}}">
 		                {{form.model_name.label}}
 		                <div class="input-group">
