@@ -87,7 +87,7 @@
     </script>
     {% if task.mean_file %}
     <b>Image mean:</b>
-    <img src="{{url_for('serve_file', path=task.path('mean.jpg', relative=True))}}" />
+    <img src="{{url_for('serve_file', path=task.path('mean.jpg', relative=True))}}?workspace={{ workspace.workspace_hash }}" />
     {% endif %}
     {% endif %}
 </div>

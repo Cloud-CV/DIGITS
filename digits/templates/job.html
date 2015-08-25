@@ -91,7 +91,7 @@ socket.on('task update', function (msg) {
                 <script>
 function updateJobName() {
     var newName = $("input[name=job-name]").val();
-    $.ajax("{{url_for('edit_job', job_id=job.id())}}",
+    $.ajax("{{url_for('edit_job', job_id=job.id())}}?workspace={{ workspace.workspace_hash }}",
             {
                 type: "PUT",
                 data: {"job_name": newName}

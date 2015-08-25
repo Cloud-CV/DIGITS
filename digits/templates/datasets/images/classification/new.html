@@ -13,11 +13,13 @@ New Image Classification Dataset
 {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <div class="page-header">
     <h1>New Image Classification Dataset</h1>
 </div>
 
-<form action="{{url_for('image_classification_dataset_create')}}?workspace={{ workspace.workspace_hash }}" enctype="multipart/form-data" method="post">
+<form action="{{url_for('image_classification_dataset_create')}}?workspace={{ workspace.workspace_hash }}" enctype="multipart/form-data" method="post" id="createImageClassificationDataset">
     {{ form.hidden_tag() }}
 
     {% if form.errors %}
@@ -137,11 +139,11 @@ function showResizeExample()
                     <div class="form-group{{ ' has-error' if form.folder_train.errors else '' }}">
                         {{ form.folder_train.label }}
                         <div class="input-group">
-                            {{ form.folder_train(class='form-control', placeholder='folder or URL')}}
+                            {{ form.folder_train(class='form-control', placeholder='folder or URL or Path of Cloud Storage')}}
                             <span name="folder_train_explanation"
                                 class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
                                 data-container="body"
-                                title="Indicate a folder which holds subfolders full of images. Each subfolder should be named according to the desired label for the images that it holds. Can also be a URL for an apache/nginx auto-indexed folder."
+                                title="Indicate a folder which holds subfolders full of images. Each subfolder should be named according to the desired label for the images that it holds. Can also be a URL for an apache/nginx auto-indexed folder or path of any of associated cloud storages. For eg: s3://bucket_name:/path/to/train/folder or dropbox://path/to/training/folder"
                                 ></span>
                         </div>
                     </div>
@@ -180,7 +182,7 @@ function showResizeExample()
                     {{form.has_val_folder.label}}
                     <div id="separate-val-folder" style="display:none;" class="form-group{{ ' has-error' if form.folder_val.errors else '' }}">
                         {{ form.folder_val.label }}
-                        {{ form.folder_val(class='form-control') }}
+                        {{ form.folder_val(class='form-control', placeholder='folder or Path of Cloud Storage') }}
                     </div>
                     <script>
 function hasValFolderChanged() {
@@ -359,9 +361,93 @@ $('#db-tabs a[href="#db-{{ form.method.data }}"]').tab('show');
     </div>
 
 </form>
-
+<div id="progressModal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Fetching Data from Cloud Storages</h4>
+      </div>
+      <div class="modal-body">
+        <div id="progressbar"></div>
+        <p>Please wait while we are fetching data from Cloud Storage. You will be redirected automatically once download completes.</p><p>Note: This may take some time.</p>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 $(".explanation-tooltip").tooltip();
+</script>
+<script>
+    $( "#progressbar" ).progressbar({
+      value: false
+    });
+</script>
+<script type="text/javascript">
+
+$("form").submit(function(e){
+    $('#progressModal').modal('show');
+    // e.preventDefault();
+    // e.returnType = false 
+    getValidationFolder();
+    getTrainingFolder();
+});
+function getValidationFolder(){
+    var validationFolder = $('#folder_val').val();
+    if (validationFolder.indexOf('s3') > -1 || validationFolder.indexOf('dropbox') > -1 || validationFolder.indexOf('gdrive') > -1)
+            {
+                // var $form = $(this);
+                $.ajax(
+                {
+                    type: 'POST',
+                    url: "http://deshraj.com:8000/api/download/",
+                    // context: $form,
+                    dataType: "json",
+                    async: false,
+                    data: {
+                        source_path: $("#folder_val").val(),
+                        dest_path:"/home/cloudcv/validation",
+                        session_id: '{{ request.cookies.get("sessionid") }}',
+                    },
+                    success: function(result){
+                        $("#folder_val").val(result['dest_path']);
+                        // $('#progressModal').modal('toggle');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        alert("error");
+                    },
+                    complete: function(){
+                    }
+                });
+            }
+}
+
+function getTrainingFolder(){
+    var trainFolder = $("#folder_train").val();
+        if (trainFolder.indexOf('s3') > -1 || trainFolder.indexOf('dropbox') > -1 || trainFolder.indexOf('gdrive') > -1)
+        {
+            // var $form = $(this);
+            $.ajax(
+                {
+                    type: 'POST',
+                    url: "http://deshraj.com:8000/api/download/",
+                    // context: $form,
+                    dataType: "json",
+                    async: false,
+                    data: {
+                        source_path: $("#folder_train").val(),
+                        dest_path:"/home/cloudcv/train",
+                        session_id: '{{ request.cookies.get("sessionid") }}',
+                    },
+                    success: function(result){
+                        $("#folder_train").val(result['dest_path']);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        alert(textStatus);
+                    }
+            });
+        }
+}
+
 </script>
 
 {% endblock %}

@@ -465,7 +465,7 @@ function customizeNetwork(network, snapshot_list) {
                             <td>
                                 {{network}}
                                 {{network.label}}
-                                <a href="{{url_for("models_show", job_id=network.data)}}" target="_blank">View</a>
+                                <a href="{{url_for("models_show", job_id=network.data)}}?workspace={{ workspace.workspace_hash }}" target="_blank">View</a>
                             </td>
                             <td>
                                 {% set snapshot_list = previous_network_snapshots[loop.index0] %}
