@@ -170,7 +170,8 @@ function deleteJob(job_id) {
     <ul class="list-group">
         {% for job in batch %}
         <li id="job-{{job.id()}}" class="list-group-item">
-        <a class="btn btn-xs btn-danger pull-right" onClick="return deleteJob('{{job.id()}}');">Delete</a>
+        <a class="btn btn-xs btn-danger pull-right" onClick="return deleteJob('{{job.id()}}');" >Delete</a>
+        <a class="btn btn-xs btn-primary pull-right" onClick="return deleteJob('{{job.id()}}');" style="margin-right:5px;">Export to Cloud Storage</a>
             <h4 class="list-group-item-heading"><a href="{{ url_for('models_show', job_id=job.id()) }}?workspace={{ workspace.workspace_hash }}">{{ job.name() }}</a></h4>
             <p class="list-group-item-text">
             <b>Type:</b> {{job.job_type()}}
