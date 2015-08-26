@@ -38,7 +38,7 @@ class CaffeLoadModelTask(LoadModelTask):
         #TODO
         pass
 
-    def __init__(self, network, **kwargs):
+    def __init__(self, network, mean_file, **kwargs):
         """
         Arguments:
         network -- a caffe NetParameter defining the network
@@ -54,6 +54,7 @@ class CaffeLoadModelTask(LoadModelTask):
 
         self.loaded_snapshot_file = None
         self.loaded_snapshot_epoch = None
+        self.image_mean = mean_file
         self.solver = None
 
         self.solver_file = constants.CAFFE_SOLVER_FILE
@@ -87,6 +88,8 @@ class CaffeLoadModelTask(LoadModelTask):
         # Make changes to self
         self.loaded_snapshot_file = None
         self.loaded_snapshot_epoch = None
+        
+        self.image_mean = None
 
 
     ### Task overrides
@@ -552,10 +555,11 @@ class CaffeLoadModelTask(LoadModelTask):
         """
         labels = self.get_labels() 
         net = self.get_net(snapshot_epoch)
-
+        
         # process image
         if image.ndim == 2:
             image = image[:,:,np.newaxis]
+        
         preprocessed = self.get_transformer().preprocess(
                 'data', image)
 
@@ -640,7 +644,7 @@ class CaffeLoadModelTask(LoadModelTask):
                 elif layers[0] in all_network_layer_names:
                     layer = ''
                     for iter_layer in self.network.layer:
-                        if iter_layer.name == layers:
+                        if iter_layer.name == layers[0]:
                             layer = iter_layer
                             break
                     added_activations = []
@@ -901,11 +905,9 @@ class CaffeLoadModelTask(LoadModelTask):
         caffe_images = np.array(caffe_images)
 
         if self.batch_size:
-            #TODO : get channels somehow.
             data_shape = (self.batch_size, self.channels)
         # TODO: grab batch_size from the TEST phase in train_val network
         else:
-            #TODO : get channels somehow.
             data_shape = (constants.DEFAULT_BATCH_SIZE, self.channels)
 
         if self.crop_size:
@@ -1194,7 +1196,6 @@ class CaffeLoadModelTask(LoadModelTask):
         if hasattr(self, '_transformer') and self._transformer is not None:
             return self._transformer
 
-        # TODO : get channels somehow.
         data_shape = (1, self.channels)
         if self.crop_size:
             data_shape += (self.crop_size, self.crop_size)
@@ -1206,28 +1207,15 @@ class CaffeLoadModelTask(LoadModelTask):
                 )
         t.set_transpose('data', (2,0,1)) # transpose to (channels, height, width)
 
-        #if self.dataset.image_dims[2] == 3 and \
-        #        self.dataset.train_db_task().image_channel_order == 'BGR':
-            # channel swap
-            # XXX see issue #59
+        # channel swap
+        # XXX see issue #59
         t.set_channel_swap('data', (2,1,0))
 
-        #if self.use_mean:
-            # set mean
-        #    with open(self.dataset.path(self.dataset.train_db_task().mean_file)) as f:
-        #        blob = caffe_pb2.BlobProto()
-        #        blob.MergeFromString(f.read())
-        #        pixel = np.reshape(blob.data,
-        #                (
-        #                    self.dataset.image_dims[2],
-        #                    self.dataset.image_dims[0],
-        #                    self.dataset.image_dims[1],
-        #                    )
-        #                ).mean(1).mean(1)
-        #        t.set_mean('data', pixel)
-
-        #t.set_raw_scale('data', 255) # [0,255] range instead of [0,1]
+        if self.image_mean:
+            # set mean from provided mean file
+            data = np.load(self.image_mean)
+            pixel = data.mean(1).mean(1)
+            t.set_mean('data', pixel)                
 
         self._transformer = t
         return self._transformer
-

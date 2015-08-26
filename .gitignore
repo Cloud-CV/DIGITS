@@ -10,3 +10,4 @@
 # Ignore these directories
 /venv/
 /digits/jobs/
+/pretrained_models/

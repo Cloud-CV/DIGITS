@@ -76,18 +76,93 @@ def feature_extraction_model_create():
                 workspace = workspace,
                 name = form.model_name.data,
                 )
-
         network = caffe_pb2.NetParameter()
         pretrained_model = None
+
+        digits_cwd = os.getcwd()
+       
+        if form.gist_id.data:
+            gist_id = form.gist_id.data
+            import subprocess
+
+            # Stores the gist in DIGITS_HOME/pretrained_models/gist_id/gist_id_master folder.
+            command = digits_cwd+'/scripts/download_model_from_gist.sh '+gist_id
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process.wait()
+            for line in process.stdout:
+                print line,
+            print "Gist successfully downloaded"
+
+            gist_location = digits_cwd+'/pretrained_models/'+gist_id+'/'+gist_id+'-master'
+            # Now download the .caffemodel file from the gist readme.
+            command= digits_cwd+'/scripts/download_model_binary.py '+gist_location
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process.wait()
+            for line in process.stdout:
+                print line,
+            if not process.returncode == 1:
+                print "Caffe model successfully downloaded from the caffe zoo."
+            else:
+                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file')
+            
+            for filename in os.listdir(gist_location):
+                if filename.endswith('.caffemodel'):
+                    pretrained_model = str(gist_location+'/'+filename).strip()
+
+            if not pretrained_model:
+                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel from gist! : %s' % gist_id)
         
+        elif form.caffezoo_model.data:
+            import subprocess
+            
+            model_gist_location = digits_cwd+'/pretrained_models/'+form.caffezoo_model.data
+            command = digits_cwd+'/scripts/download_model_binary.py '+model_gist_location
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process.wait()
+            for line in process.stdout:
+                print line,
+            if not process.returncode == 1:
+                print "Caffe model successfully loaded from the caffe zoo."
+            else:
+                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file from zoo.')
+            
+            for filename in os.listdir(model_gist_location):
+                if filename.endswith('.caffemodel'):
+                    pretrained_model = str(model_gist_location+'/'+filename).strip()
+
+            try:
+                with open(model_gist_location+'/deploy.prototxt', 'r') as deploy_file:
+                    deploy_content = deploy_file.read()
+            except:
+               raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist in : %s' % model_gist_location) 
+
+            if not pretrained_model or not deploy_content:
+                raise werkzeug.exceptions.BadRequest('Model not Found : %s' % form.caffezoo_model.data)
+
+        else:
+            try:
+                pretrained_model = form.custom_network_snapshot.data.strip()
+            except:
+                raise werkzeug.exceptions.BadRequest('File does not exist : %s' % form.custom_network_snapshot.data.strip())
+        
+        if not form.caffezoo_model.data:
+            try:
+                with open(form.custom_network.data, 'r') as deploy_file:
+                    deploy_content = deploy_file.read()
+            except:
+                raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist : %s' % form.custom_network.data)
+
         if form.method.data == 'custom':
-            text_format.Merge(form.custom_network.data, network)
-            pretrained_model = form.custom_network_snapshot.data.strip()
+            text_format.Merge(deploy_content, network)
         else:
             raise werkzeug.exceptions.BadRequest(
                     'Unrecognized method: "%s"' % form.method.data)
-
         
+        if form.mean_file.data:
+            mean_file = form.mean_file.data
+        else:
+            mean_file = None
+
         job.tasks.append(
                 tasks.CaffeLoadModelTask(
                     job_dir         = job.dir(),
@@ -95,6 +170,7 @@ def feature_extraction_model_create():
                     crop_size       = None,
                     channels        = None,
                     network         = network,
+                    mean_file       = mean_file,
                     )
                 )
 
@@ -113,7 +189,26 @@ def show(job, *args):
     """
     Called from digits.model.views.models_show()
     """
-    return flask.render_template('models/images/extraction/show.html', job=job, workspace = args[0])
+    import caffe
+    
+    job_id = job.id()
+    model_file = './digits/jobs/'+job_id+'/snapshot_iter_1.caffemodel'
+    prototxt_file = './digits/jobs/'+job_id+'/deploy.prototxt'
+
+    meta_data = {}
+    try:
+        net = caffe.Net(prototxt_file, model_file, caffe.TEST)
+        meta_data['InputDimensions'] = net.blobs['data'].data.shape
+        meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
+    except:
+        # wait for the model to be loaded onto memory.
+        import time
+        time.sleep(2)
+        net = caffe.Net(prototxt_file, model_file, caffe.TEST)
+        meta_data['InputDimensions'] = net.blobs['data'].data.shape
+        meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
+
+    return flask.render_template('models/images/extraction/show.html', job=job, meta_data=meta_data, workspace = args[0])
 
 @app.route(NAMESPACE + '/large_graph', methods=['GET'])
 @autodoc('models')
@@ -150,8 +245,6 @@ def feature_extraction_model_classify_one():
             image = utils.image.load_image(outfile.name)
     else:
         raise werkzeug.exceptions.BadRequest('Must provide image_url or image_file')
-
-    # TODO : This needs to be looked into with detail. See how to get the crop size parameters.
 
     # resize image
     model_task = job.load_model_task()
