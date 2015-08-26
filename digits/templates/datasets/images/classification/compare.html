@@ -14,19 +14,48 @@ Models Evaluation on Dataset
 
 {% block content %}
 <div class="page-header">
-    <h1>Models Evaluation on Dataset</h1>
+    <h1>Model Evaluation on Dataset</h1>
 </div>
 
-<h4>Select the models to be evaluated :</h4>
 <div class="row">
     <div class="col-sm-6">
         <div class="well">
-            <dl>
-            {% for model in dataset_models: %}
-                <dt>{{ model.name() }}</dt>
-            {% endfor %}
-            </dl>
+            <h4 class='text-center'>Models trained on Dataset</h4>
+            <form id="compare-model-form"
+                enctype="multipart/form-data"
+                method="post"
+                onkeypress="return event.keyCode != 13;" {# Disable enter to submit #}
+                >
+                <div class="row">
+                    <div class="col-sm-12">
+                        {% for model in dataset_models: %}
+                            <div class="form-group">   
+                                <label for="{{model.id()}}">
+                                    <input type="checkbox" id="{{model.id()}}" value="{{model.id()}}" name="model">                              
+                                    <a href="{{url_for('show_job', job_id=model.id())}}" target="_blank"> |> {{ model.name() }}</a>
+                                </label>          
+                            </div>
+                        {% endfor %}
+                        <button name="compare-model-btn" onClick="return compareModels();" class="btn btn-primary">Compare Models</button>
+                        <span name="compare-model-explanation"
+                            class="explanation-tooltip glyphicon glyphicon-question-sign"
+                            data-container="body"
+                            title="The selected models will be evaluated on the validation set of the dataset and their performance will be ranked."
+                            ></span>
+                    </div>
+                </div>
+            </form>     
         </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="well">
+            <h4 class='text-center'>Dataset</h4>
+            {% if job %}
+            {% with dataset = job %}
+            {% include 'datasets/summary.html' %}
+            {% endwith %}
+            {% endif %}
+       </div>
     </div>
 </div>
 
