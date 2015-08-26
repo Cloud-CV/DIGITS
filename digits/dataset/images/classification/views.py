@@ -267,4 +267,19 @@ def models_compare(dataset_job):
     """
     Called from digits.dataset.views.dataset_models_compare()
     """
-    return flask.render_template('datasets/images/classification/compare.html', job=dataset_job)
+    from digits import model
+    jobs = get_job_list(model.ModelJob, False)
+
+    dataset_models = []
+    for job in jobs:
+        if job.dataset.id()==dataset_job.id():
+            dataset_models.append(job)
+   
+    return flask.render_template('datasets/images/classification/compare.html', job=dataset_job, dataset_models=dataset_models)
+
+def get_job_list(cls, running):
+    return sorted(
+            [j for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running],
+            key=lambda j: j.status_history[0][1],
+            reverse=True,
+            )
