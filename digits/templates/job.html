@@ -180,7 +180,7 @@ $('#delete-job').on('click', function(event) {
                             <div id="{{task.html_id()}}-status" class="panel panel-{{task.status.css}}">
                                 <div class="panel-heading">
                                     <h4 class="panel-title">
-                                        <a data-toggle="collapse" href="#{{task.html_id()}}-status-collapse?workspace={{ workspace.workspace_hash }}">
+                                        <a data-toggle="collapse" href="#{{task.html_id()}}-status-collapse">
                                             {{task.name()}}
                                             <small>{{task.status.name}}</small>
                                             <span class="caret"></span>
