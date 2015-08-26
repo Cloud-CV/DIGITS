@@ -2,4 +2,3 @@
 
 from job import ImageDatasetJob
 from classification import *
-from extraction import *

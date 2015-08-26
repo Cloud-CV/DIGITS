@@ -238,8 +238,7 @@ def feature_extraction_model_classify_one():
     else:
         raise werkzeug.exceptions.BadRequest('Failed to extract crop_size from network')
     image = utils.image.resize_image(image, height, width,
-            #TODO : Get channels elegantly.
-            channels = 3,
+            channels = model_task.channels,
             resize_mode = None,
             )
 

@@ -37,6 +37,7 @@ class LoadModelTask(Task):
         self.pretrained_model = kwargs.pop('pretrained_model', None)
         self.crop_size = kwargs.pop('crop_size', None)
         self.channels = kwargs.pop('channels', 3) # Would be reset once we obtain the actual number of channels from the .prototxt
+        self.batch_size = kwargs.pop('batch_size', None)
 
         super(LoadModelTask, self).__init__(**kwargs)
         self.pickver_task_loadmodel = PICKLE_VERSION
