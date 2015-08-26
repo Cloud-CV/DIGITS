@@ -53,11 +53,6 @@ def home():
                         'id': 'image-classification',
                         'url': flask.url_for('image_classification_dataset_new'),
                         },
-                    {
-                        'title': 'Pretrained CaffeModel',
-                        'id': 'feature-extraction',
-                        'url': flask.url_for('feature_extraction_dataset_new'),
-                        },
                     ])
                 ]
         new_model_options = [
