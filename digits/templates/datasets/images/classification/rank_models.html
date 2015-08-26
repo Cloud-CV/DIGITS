@@ -1,13 +1,13 @@
 
 <div class="row">
-
+    <h3 style="text-align:center">{{ dataset.name() }} <span class="badge">{{ dataset.id() }}</span></h3>
     <div class="col-sm-6">
         <h4>Models</h4>
         <ul class="list-group">
             {% for model_id in models %}
             <li class="list-group-item">
             <span class="badge">{{ model_id }}</span>
-            {{ models[model_id] }}
+            {{ models[model_id].name() }}
             </li>
             {% endfor %}
         </ul>

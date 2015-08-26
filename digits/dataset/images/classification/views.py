@@ -283,6 +283,8 @@ def rank_models(dataset_job_id):
     """
     Rank the models based on their performance on the validation set of database.
     """
+    dataset = scheduler.get_job(dataset_job_id)
+
     models = {}
     for model_id in flask.request.form:
         models[model_id] = scheduler.get_job(model_id)
@@ -291,6 +293,7 @@ def rank_models(dataset_job_id):
         models['No Model Selected'] = 'Select a model using the checkbox to compare'
 
     return flask.render_template('datasets/images/classification/rank_models.html',
+            dataset = dataset,
             models = models)
 
 def get_job_list(cls, running):
