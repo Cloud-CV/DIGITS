@@ -29,10 +29,20 @@ def datasets_show(job_id):
     else:
         if isinstance(job, dataset_images.ImageClassificationDatasetJob):
             return dataset_images.classification.views.show(job)
-        elif isinstance(job, dataset_images.FeatureExtractionDatasetJob):
-            return dataset_images.extraction.views.show(job)
         else:
             raise werkzeug.exceptions.BadRequest('Invalid job type')
+
+@app.route(NAMESPACE + '<dataset_job_id>/evaluate',methods=['GET','POST'])
+@autodoc('datasets')
+def dataset_models_compare(dataset_job_id):
+    """
+    Compare models performance on the validation set of the dataset and return performance matrix.
+    """
+    dataset_job = scheduler.get_job(dataset_job_id)
+    if dataset_job is None:
+        raise werkzeug.exceptions.NotFound('Job not found')
+
+    return dataset_images.classification.views.models_compare(dataset_job)
 
 @app.route(NAMESPACE + 'summary', methods=['GET'])
 @autodoc('datasets')

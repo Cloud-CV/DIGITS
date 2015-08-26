@@ -263,3 +263,8 @@ def show(job):
     """
     return flask.render_template('datasets/images/classification/show.html', job=job)
 
+def models_compare(dataset_job):
+    """
+    Called from digits.dataset.views.dataset_models_compare()
+    """
+    return flask.render_template('datasets/images/classification/compare.html', job=dataset_job)
