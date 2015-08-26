@@ -26,6 +26,30 @@ function deleteJob(job_id) {
             });
     return false;
 }
+
+function exportJob(job_id, job_name, job_dir) {
+    bootbox.prompt("Enter the path on Cloud Storage to export", function(result) {
+        if (result){
+            if(result.substr(result.length-1)!='/')
+                result+='/';
+            $.ajax({
+                url:'http://localhost:8000/api/upload/',
+                type: "POST",
+                data:{
+                    source_path: job_dir,
+                    dest_path: result+job_name+"/",
+                    session_id: '{{ request.cookies.get("sessionid") }}',
+                }
+            })
+            .done(function() {
+                bootbox.alert("Model exported to Cloud Storage Successfully");
+                })
+            .fail(function(data) { errorAlert(data); });
+        }
+    });
+    return false;
+}
+
 </script>
 <div class="page-header">
     <h1>DIGITS</h1>
@@ -171,7 +195,7 @@ function deleteJob(job_id) {
         {% for job in batch %}
         <li id="job-{{job.id()}}" class="list-group-item">
         <a class="btn btn-xs btn-danger pull-right" onClick="return deleteJob('{{job.id()}}');" >Delete</a>
-        <a class="btn btn-xs btn-primary pull-right" onClick="return deleteJob('{{job.id()}}');" style="margin-right:5px;">Export to Cloud Storage</a>
+        <a class="btn btn-xs btn-primary pull-right" onClick="return exportJob('{{job.id()}}','{{job.name()}}','{{job.dir()}}');" style="margin-right:5px;">Export to Cloud Storage</a>
             <h4 class="list-group-item-heading"><a href="{{ url_for('models_show', job_id=job.id()) }}?workspace={{ workspace.workspace_hash }}">{{ job.name() }}</a></h4>
             <p class="list-group-item-text">
             <b>Type:</b> {{job.job_type()}}
