@@ -277,6 +277,19 @@ def models_compare(dataset_job):
    
     return flask.render_template('datasets/images/classification/compare.html', job=dataset_job, dataset_models=dataset_models)
 
+
+@app.route(NAMESPACE + '/rank/<dataset_job_id>', methods=['POST'])
+def rank_models(dataset_job_id):
+    """
+    Rank the models based on their performance on the validation set of database.
+    """
+    models = {}
+    for model_id in flask.request.form:
+        models[model_id] = scheduler.get_job(model_id)
+
+    return flask.render_template('datasets/images/classification/rank_models.html',
+            models = models)
+
 def get_job_list(cls, running):
     return sorted(
             [j for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running],
