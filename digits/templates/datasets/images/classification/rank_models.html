@@ -4,12 +4,16 @@
     <div class="col-sm-6">
         <h4>Models</h4>
         <ul class="list-group">
-            {% for model_id in models %}
-            <li class="list-group-item">
-            <span class="badge">{{ model_id }}</span>
-            {{ models[model_id].name() }}
-            </li>
-            {% endfor %}
+            {% if len_models > 0: %}
+                {% for idx in range(len_models): %}
+                    <li class="list-group-item">
+                    <span class="badge">{{ models[idx]['score'] }}</span>
+                    {{ models[idx]['model'].name() }}
+                    </li>
+                {% endfor %}
+            {% else: %}
+                {{ models[0]['model'] }}
+            {% endif %}
         </ul>
     </div>
 </div>

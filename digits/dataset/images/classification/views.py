@@ -285,16 +285,49 @@ def rank_models(dataset_job_id):
     """
     dataset = scheduler.get_job(dataset_job_id)
 
-    models = {}
+    models = []
     for model_id in flask.request.form:
-        models[model_id] = scheduler.get_job(model_id)
+        models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
 
     if not models:
-        models['No Model Selected'] = 'Select a model using the checkbox to compare'
+        models.append({'model' : 'Select a model using the checkbox to compare', 'score' : '---'})
+        return flask.render_template('datasets/images/classification/rank_models.html',
+                dataset = dataset,
+                models = models,
+                len_models = 0
+                )
+
+    # TODO : Get the validation set instead of hardcoding.
+    image = utils.image.load_image('/home/mohit/Downloads/problem3.png')
+
+    db_task = dataset.train_db_task()
+    height = db_task.image_dims[0]
+    width = db_task.image_dims[1]
+
+    for idx in range(len(models)):
+        model = models[idx]['model']
+        if model.train_task().crop_size:
+            height = job.train_task().crop_size
+            width = job.train_task().crop_size
+        image = utils.image.resize_image(image, height, width,
+                channels = db_task.image_dims[2],
+                resize_mode = db_task.resize_mode,
+                )
+
+        epoch = float(model.train_task().snapshots[-1][1])
+
+        predictions, visualizations = model.train_task().infer_one(image, snapshot_epoch=epoch)
+        predictions = [(p[0], round(100.0*p[1],2)) for p in predictions[:5]]
+
+        models[idx]['score'] = predictions[0][1]
+
+    models = sorted(models, key=lambda k: k['score'], reverse=True)
 
     return flask.render_template('datasets/images/classification/rank_models.html',
             dataset = dataset,
-            models = models)
+            models = models,
+            len_models = len(models)
+            )
 
 def get_job_list(cls, running):
     return sorted(

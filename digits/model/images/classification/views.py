@@ -253,6 +253,7 @@ def image_classification_model_classify_one():
     else:
         raise werkzeug.exceptions.BadRequest('Must provide image_url or image_file')
 
+
     # resize image
     db_task = job.train_task().dataset.train_db_task()
     height = db_task.image_dims[0]
@@ -268,6 +269,7 @@ def image_classification_model_classify_one():
     epoch = None
     if 'snapshot_epoch' in flask.request.form:
         epoch = float(flask.request.form['snapshot_epoch'])
+        print epoch
 
     layers = 'none'
     if 'show_visualizations' in flask.request.form and flask.request.form['show_visualizations']:
