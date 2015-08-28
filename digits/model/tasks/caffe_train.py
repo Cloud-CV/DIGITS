@@ -955,12 +955,12 @@ class CaffeTrainTask(TrainTask):
         return False
 
     @override
-    def infer_many(self, data, snapshot_epoch=None, layers=None):
+    def infer_many(self, data, snapshot_epoch=None, layers=None, batch_size=None):
         if isinstance(self.dataset, ImageClassificationDatasetJob):
-            return self.classify_many(data, snapshot_epoch=snapshot_epoch, layers=layers)
+            return self.classify_many(data, snapshot_epoch=snapshot_epoch, layers=layers, batch_size=batch_size)
         raise NotImplementedError()
 
-    def classify_many(self, images, snapshot_epoch=None, layers=None):
+    def classify_many(self, images, snapshot_epoch=None, layers=None, batch_size=None):
         """
         Returns (labels, results):
         labels -- an array of strings
@@ -989,7 +989,9 @@ class CaffeTrainTask(TrainTask):
 
         caffe_images = np.array(caffe_images)
 
-        if self.batch_size:
+        if batch_size:
+            data_shape = (batch_size, self.dataset.image_dims[2])
+        elif self.batch_size:
             data_shape = (self.batch_size, self.dataset.image_dims[2])
         # TODO: grab batch_size from the TEST phase in train_val network
         else:

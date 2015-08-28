@@ -339,7 +339,7 @@ def rank_models(dataset_job_id):
 
         epoch = float(model.train_task().snapshots[-1][1])
 
-        labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
+        labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch, batch_size=50)
 
         # Taking only the Top-K results.
         indices = (-scores).argsort()[:, :top_k]
