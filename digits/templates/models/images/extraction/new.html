@@ -13,6 +13,24 @@ Loading Pretrained CaffeModel
 {% endblock %}
 
 {% block content %}
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+        namespace = ''; // change to an empty string to use the global namespace
+        var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+
+        socket.on('my progressbar', function(msg) {
+            $( "#progressbar" ).progressbar({
+                value: msg.percent
+            });
+            $('#log').append('<br>Completed #' + msg.percent);
+        });
+    });
+</script>
 <div class="page-header">
     <h1>Loading Pretrained Model</h1>
 </div>
@@ -228,9 +246,102 @@ $('#network-tabs a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
 $('#network-tabs a[href="#network-tab-custom"]').tab('show');
 //$('#network-tabs a[href="#network-tab-'+$("#method").val()+'"]').tab('show');
             </script>
+            <script type="text/javascript">
+                function checkForCloudStorage(){
+                    if ($('#network-tab-cloud-storage').hasClass('active') == true){
+
+                        $('#progressModal').modal('show');
+                        $.ajax(
+                        {
+                            type: 'POST',
+                            url: "http://deshraj.com:8000/api/download/",
+                            dataType: "json",
+                            async: false,
+                            data: {
+                                source_path: $("#custom_network_snapshot").val(),
+                                dest_path:"/home/digits_downloads/",
+                                session_id: '{{ request.cookies.get("sessionid") }}',
+                            },
+                            success: function(result){
+                                if(result['error']){
+                                    alert(result['error']);
+                                }
+                                $("#custom_network_snapshot").val(result['dest_path']);
+                            },
+                            error: function(jqXHR, textStatus, errorThrown){
+                                alert(textStatus);
+                            }
+                        });
+                        $('#progressModal').modal('hide');
+                        $('#progressModal').modal('show');
+                        $.ajax(
+                        {
+                            type: 'POST',
+                            url: "http://deshraj.com:8000/api/download/",
+                            dataType: "json",
+                            async: false,
+                            data: {
+                                source_path: $("#custom_network").val(),
+                                dest_path:"/home/digits_downloads/",
+                                session_id: '{{ request.cookies.get("sessionid") }}',
+                            },
+                            success: function(result){
+                                if(result['error']){
+                                    alert(result['error']);
+                                }
+                                $("#custom_network").val(result['dest_path']);
+                            },
+                            error: function(jqXHR, textStatus, errorThrown){
+                                alert(textStatus);
+                            }
+                        });
+                        if ($('#mean_val').val() != ""){
+                            $('#progressModal').modal('show');
+                            $.ajax(
+                            {
+                                type: 'POST',
+                                url: "http://deshraj.com:8000/api/download/",
+                                dataType: "json",
+                                async: false,
+                                data: {
+                                    source_path: $("#mean_file").val(),
+                                    dest_path:"/home/digits_downloads/",
+                                    session_id: '{{ request.cookies.get("sessionid") }}',
+                                },
+                                success: function(result){
+                                    if(result['error']){
+                                        alert(result['error']);
+                                    }
+                                    $("#mean_file").val(result['dest_path']);
+                                },
+                                error: function(jqXHR, textStatus, errorThrown){
+                                    alert(textStatus);
+                                }
+                            });
+                            $('#progressModal').modal('hide');
+                        }
+                    }
+                }
+            </script>
         </div>    
     </div>
-
 </form>
-
+<div id="progressModal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Fetching Data from Cloud Storages</h4>
+      </div>
+      <div class="modal-body">
+        <div id="progressbar"></div>
+        <p>Please wait while we are fetching data from Cloud Storage. You will be redirected automatically once download completes.</p><p>Note: This may take some time.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    $( "#progressbar" ).progressbar({
+      value: 0
+    });
+</script>
 {% endblock %}
