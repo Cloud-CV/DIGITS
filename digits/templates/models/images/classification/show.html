@@ -301,7 +301,7 @@ function classifyOne() {
     // grab all form data
     var formData = new FormData($("#test-model-form")[0]);
 
-    $.ajax("{{url_for('image_classification_model_classify_one', job_id=job.id())}}",
+    $.ajax("{{url_for('image_classification_model_classify_one', job_id=job.id())}}&workspace={{ workspace.workspace_hash }}",
     {
         type: "POST",
         data: formData,
@@ -327,7 +327,7 @@ function classifyMany() {
     // grab all form data
     var formData = new FormData($("#test-model-form")[0]);
 
-    $.ajax("{{url_for('image_classification_model_classify_many', job_id=job.id())}}{{ workspace.workspace_hash }}",
+    $.ajax("{{url_for('image_classification_model_classify_many', job_id=job.id())}}&workspace={{ workspace.workspace_hash }}",
             {
                 type: "POST",
                 data: formData,
