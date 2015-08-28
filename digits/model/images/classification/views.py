@@ -43,7 +43,7 @@ def image_classification_model_new():
     """
     workspace = get_workspace_details(flask.request.url)
     form = ImageClassificationModelForm()
-    form.dataset.choices = get_datasets()
+    form.dataset.choices = get_datasets(workspace)
     form.standard_networks.choices = get_standard_networks()
     form.standard_networks.default = get_default_standard_network()
     form.previous_networks.choices = get_previous_networks()
@@ -70,7 +70,7 @@ def image_classification_model_create():
     """
     workspace = get_workspace_details(flask.request.url)
     form = ImageClassificationModelForm()
-    form.dataset.choices = get_datasets()
+    form.dataset.choices = get_datasets(workspace)
     form.standard_networks.choices = get_standard_networks()
     form.standard_networks.default = get_default_standard_network()
     form.previous_networks.choices = get_previous_networks()
@@ -590,9 +590,13 @@ def image_classification_model_top_n():
             workspace = workspace,
             )
 
-def get_datasets():
+def get_datasets(*args):
+    workspace = args[0]
+    scheduler_jobs = [j._id for j in scheduler.jobs if isinstance(j, ImageClassificationDatasetJob) and (j.status.is_running() or j.status == Status.DONE)]
+    workspace_jobs = [job.job_id for job in WorkspaceJob.objects.filter(workspace__pk = str(workspace['workspace_id']))]
+    workspace_scheduled_jobs = list(set(workspace_jobs) & set(scheduler_jobs))
     return [(j.id(), j.name()) for j in sorted(
-        [j for j in scheduler.jobs if isinstance(j, ImageClassificationDatasetJob) and (j.status.is_running() or j.status == Status.DONE)],
+        [j for j in scheduler.jobs if isinstance(j, ImageClassificationDatasetJob) and (j.status.is_running() or j.status == Status.DONE) and j._id in workspace_scheduled_jobs],
         cmp=lambda x,y: cmp(y.id(), x.id())
         )
         ]
