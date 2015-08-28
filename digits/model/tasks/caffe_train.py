@@ -1001,7 +1001,8 @@ class CaffeTrainTask(TrainTask):
             data_shape += (self.dataset.image_dims[0], self.dataset.image_dims[1])
 
         # Handle csv input of layer names.
-        layers = [layer.strip() for layer in layers.split(',')]
+        if layers:
+            layers = [layer.strip() for layer in layers.split(',')]
 
         scores = None
         visualizations_all = None
