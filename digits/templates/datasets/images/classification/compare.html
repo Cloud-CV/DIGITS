@@ -20,7 +20,8 @@ Models Evaluation on Dataset
 <div class="row">
     <div class="col-sm-6">
         <div class="well">
-            <h4 class='text-center'>Models trained on Dataset</h4>
+            <h4 class='text-center'>Models</h4>
+            <br/>
             <form id="compare-model-form"
                 enctype="multipart/form-data"
                 method="post"
@@ -29,6 +30,18 @@ Models Evaluation on Dataset
                 >
                 <div class="row">
                     <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="top-k">
+                                Top-K :
+                                <input type="text" id="top-k" name="top-k">
+                            </label>
+                            <span name="top-k-explanation"
+                                  class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                  data-container="body"
+                                  title="Provide what value of K to use for Top-K evaluations of each model. [Default : 5]"
+                            ></span>
+                        </div>
+                        <h5><i>Models Evaluated on this Dataset</i></h5>
                         {% for model in dataset_models: %}
                             <div class="form-group">   
                                 <label for="{{model.id()}}">

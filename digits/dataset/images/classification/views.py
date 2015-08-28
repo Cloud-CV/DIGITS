@@ -287,8 +287,14 @@ def rank_models(dataset_job_id):
     dataset = scheduler.get_job(dataset_job_id)
 
     models = []
-    for model_id in flask.request.form:
-        models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
+    top_k = 5 # Default value
+    
+    for var in flask.request.form:
+        if var=='top-k':
+            top_k = int(flask.request.form['top-k'])
+        else:
+            model_id = var
+            models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
 
     if not models:
         models.append({'model' : 'Select a model using the checkbox to compare', 'score' : '---'})
@@ -335,8 +341,8 @@ def rank_models(dataset_job_id):
 
         labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
 
-        # Taking only the Top-5 results.
-        indices = (-scores).argsort()[:, :5]
+        # Taking only the Top-K results.
+        indices = (-scores).argsort()[:, :top_k]
         classifications = []
         for image_index, index_list in enumerate(indices):
             top_k_labels = []
