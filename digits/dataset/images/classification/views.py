@@ -3,6 +3,7 @@
 import os
 
 import flask
+import werkzeug.exceptions
 
 from digits.config import config_value
 from digits import utils
@@ -294,6 +295,11 @@ def rank_models(dataset_job_id):
                 top_k = int(flask.request.form['top-k'])
             except:
                 top_k = 5# Default value
+        elif var == 'class-ids':
+            try:
+                class_ids = [x.strip() for x in str(flask.request.form['class-ids']).split(',')]
+            except:
+                class_ids = ['all']
         else:
             model_id = var
             models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
@@ -305,13 +311,17 @@ def rank_models(dataset_job_id):
                 models = models,
                 len_models = 0
                 )
-
+    
     val_images_file = config_value('jobs_dir')+'/'+dataset_job_id+'/'+utils.constants.VAL_FILE
     val_images = []
     with open(val_images_file, 'r') as val_data:
         for line in val_data.readlines():
-            image = {'image': line.split()[0], 'label': line.split()[1]}
-            val_images.append(image)
+            if (line.split()[1] in class_ids) or ('all' in class_ids):
+                image = {'image': line.split()[0], 'label': line.split()[1]}
+                val_images.append(image)
+    
+    if not val_images:
+        raise werkzeug.exceptions.BadRequest('Failed to fetch validation images. Please check the class-IDs')
 
     db_task = dataset.train_db_task()
     height = db_task.image_dims[0]
