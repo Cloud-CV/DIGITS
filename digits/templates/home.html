@@ -32,6 +32,7 @@ function exportJob(job_id, job_name, job_dir) {
         if (result){
             if(result.substr(result.length-1)!='/')
                 result+='/';
+            bootbox.dialog({title:"Exporting model to Cloud Sotrage", message:"Please sit back and wait for a while exporting completes...",function(){}});
             $.ajax({
                 url:'http://localhost:8000/api/upload/',
                 type: "POST",

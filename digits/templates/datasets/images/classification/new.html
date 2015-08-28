@@ -106,7 +106,7 @@ New Image Classification Dataset
 function showResizeExample()
 {
     $.post(
-            "{{url_for('image_dataset_resize_example')}}",
+            "{{url_for('image_dataset_resize_example')}}?workspace={{ workspace.workspace_hash }}",
             {
                 "channels": $("#resize_channels").val(),
                 "width":    $("#resize_width").val(),
@@ -385,7 +385,7 @@ $(".explanation-tooltip").tooltip();
 <script type="text/javascript">
 
 $("form").submit(function(e){
-    $('#progressModal').modal('show');
+    // $('#progressModal').modal('show');
     // e.preventDefault();
     // e.returnType = false 
     getValidationFolder();
@@ -395,6 +395,7 @@ function getValidationFolder(){
     var validationFolder = $('#folder_val').val();
     if (validationFolder.indexOf('s3') > -1 || validationFolder.indexOf('dropbox') > -1 || validationFolder.indexOf('gdrive') > -1)
             {
+                $('#progressModal').modal('show');
                 // var $form = $(this);
                 $.ajax(
                 {
@@ -425,6 +426,7 @@ function getTrainingFolder(){
     var trainFolder = $("#folder_train").val();
         if (trainFolder.indexOf('s3') > -1 || trainFolder.indexOf('dropbox') > -1 || trainFolder.indexOf('gdrive') > -1)
         {
+            $('#progressModal').modal('show');
             // var $form = $(this);
             $.ajax(
                 {
