@@ -7,7 +7,7 @@
             {% if len_models > 0: %}
                 {% for idx in range(len_models): %}
                     <li class="list-group-item">
-                    <span class="badge">{{ models[idx]['score'] }}</span>
+                    <span class="badge">{{ models[idx]['score'] }}%</span>
                     {{ models[idx]['model'].name() }}
                     </li>
                 {% endfor %}

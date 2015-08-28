@@ -4,6 +4,7 @@ import os
 
 import flask
 
+from digits.config import config_value
 from digits import utils
 from digits.utils.routing import request_wants_json
 from digits.webapp import app, scheduler, autodoc
@@ -297,29 +298,55 @@ def rank_models(dataset_job_id):
                 len_models = 0
                 )
 
-    # TODO : Get the validation set instead of hardcoding.
-    image = utils.image.load_image('/home/mohit/Downloads/problem3.png')
+    val_images_file = config_value('jobs_dir')+'/'+dataset_job_id+'/'+utils.constants.VAL_FILE
+    val_images = []
+    with open(val_images_file, 'r') as val_data:
+        for line in val_data.readlines():
+            image = {'image': line.split()[0], 'label': line.split()[1]}
+            val_images.append(image)
 
     db_task = dataset.train_db_task()
     height = db_task.image_dims[0]
     width = db_task.image_dims[1]
 
-    for idx in range(len(models)):
-        model = models[idx]['model']
-        if model.train_task().crop_size:
-            height = job.train_task().crop_size
-            width = job.train_task().crop_size
+    images = []
+    for idx in range(len(val_images)):
+        image = utils.image.load_image(val_images[idx]['image'])
         image = utils.image.resize_image(image, height, width,
                 channels = db_task.image_dims[2],
                 resize_mode = db_task.resize_mode,
                 )
+        images.append(image)
+
+    model_score = []
+    for idx in range(len(models)):
+        model_score.append(0)
+        model = models[idx]['model']
+        if model.train_task().crop_size:
+            height = job.train_task().crop_size
+            width = job.train_task().crop_size
+            for image in images:
+                image = utils.image.resize_image(image, height, width,
+                        channels = db_task.image_dims[2],
+                        resize_mode = db_task.resize_mode,
+                        )
 
         epoch = float(model.train_task().snapshots[-1][1])
 
-        predictions, visualizations = model.train_task().infer_one(image, snapshot_epoch=epoch)
-        predictions = [(p[0], round(100.0*p[1],2)) for p in predictions[:5]]
+        labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
 
-        models[idx]['score'] = predictions[0][1]
+        # Taking only the Top-5 results.
+        indices = (-scores).argsort()[:, :5]
+        classifications = []
+        for image_index, index_list in enumerate(indices):
+            top_k_labels = []
+            for i in index_list:
+                top_k_labels.append(labels[i])
+            
+            if val_images[image_index]['label'] in top_k_labels:
+                model_score[idx]+=1
+       
+        models[idx]['score'] = round(float(model_score[idx]*100)/len(images),2)
 
     models = sorted(models, key=lambda k: k['score'], reverse=True)
 
