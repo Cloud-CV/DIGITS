@@ -41,6 +41,7 @@ Loading Pretrained CaffeModel
             	<li class="active"><a href="#network-tab-custom" data-toggle="tab">From File</a></li>
                 <li><a href="#network-tab-gist" data-toggle="tab">From Gist</a></li>
                 <li><a href="#network-tab-zoo" data-toggle="tab">From CaffeZoo</a></li>
+                <li><a href="#network-tab-cloud-storage" data-toggle="tab">From Cloud Storage</a></li>
             </ul>
             <div class="tab-content well">
             	<div id="network-tab-custom" class="tab-pane active">
@@ -123,6 +124,54 @@ Loading Pretrained CaffeModel
                                 class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
                                 data-container="body"
                                 title="Gist ID of the pretrained model from the caffezoo"
+                            ></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="network-tab-cloud-storage" class="tab-pane">
+                    <div class="form-group{{' has-error' if form.custom_network.errors}}">
+                        {{form.custom_network.label}}
+                        <div id="custom_network_explanation_for_cloud_storage" style="display:none;">
+                            <h1>Specifying a custom network</h1>
+                            <p>
+                            You should enter a train_val network here. Some cleanup is done for you automatically:
+                            <ul>
+                                <li>
+                                The <i>num_output</i> for each <b>InnerProduct</b> layer which is a network output gets set to the number of labels in the chosen dataset.
+                                </li>
+                                <li>
+                                Any <b>Accuracy</b> layers with <i>top_k</i> &gt;= num_labels is removed automatically.
+                                </li>
+                            </ul>
+                            </p>
+                            The deploy network will be created for you automatically. Once caffe implements their "all-in-one" nets feature, you will be able to specify which layers to include in the deploy file. Until then, these things are done automatically:
+                            <ul>
+                                <li>
+                                The last <b>SoftmaxWithLoss</b> layer is replaced with a <b>Softmax</b> layer.
+                                </li>
+                                <li>
+                                All other loss layers and accuracy layers are removed.
+                                </li>
+                            </ul>
+                            </p>
+                            <p>Format for giving path in cloud storage:
+                            <ul>
+                                <li>s3://bucket_name:/path/to/directory/</li>
+                                <li>dropbox:/path/to/directory/</li>
+                            </ul>
+                            </p>
+                        </div>
+                        <a href=# onClick="bootbox.alert($('#custom_network_explanation_for_cloud_storage').html()); return false;"><span class="glyphicon glyphicon-question-sign"></span></a>
+                        {{form.custom_network(class='form-control', rows=10)}}
+                    </div>
+                    <div class="form-group{{' has-error' if form.custom_network_snapshot.errors}}">
+                        {{form.custom_network_snapshot.label}}
+                        <div class="input-group">
+                            {{form.custom_network_snapshot(class='form-control')}}
+                            <span name="pretrained_model_explanation"
+                                class="input-group-addon explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Path to pretrained model file. Only edit this field if you understand how fine-tuning works in caffe"
                             ></span>
                         </div>
                     </div>
