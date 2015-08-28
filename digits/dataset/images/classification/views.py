@@ -287,11 +287,13 @@ def rank_models(dataset_job_id):
     dataset = scheduler.get_job(dataset_job_id)
 
     models = []
-    top_k = 5 # Default value
     
     for var in flask.request.form:
-        if var=='top-k':
-            top_k = int(flask.request.form['top-k'])
+        if var == 'top-k':
+            try:
+                top_k = int(flask.request.form['top-k'])
+            except:
+                top_k = 5# Default value
         else:
             model_id = var
             models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
