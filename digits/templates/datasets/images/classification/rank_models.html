@@ -17,3 +17,25 @@
         </ul>
     </div>
 </div>
+<div class="row">
+    <div id="chart"></div>
+    <script>
+    var chart = c3.generate({
+        data: {
+            columns: [
+                {% for idx in range(len_models): %}
+                    ["{{models[idx]['model'].name()}}", "{{models[idx]['score']}}"],
+                {% endfor %}
+            ],
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.5 // this makes bar width 50% of length between ticks
+            }
+            // or
+            //width: 100 // this makes bar width 100px
+        }
+    });
+    </script>
+</div>
