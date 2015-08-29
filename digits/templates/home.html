@@ -20,7 +20,7 @@ function deleteJob(job_id) {
                     $.ajax('/jobs/' + job_id+'?workspace={{ workspace.workspace_hash }}' ,
                         {type: "DELETE"})
                     .done(function() {
-                        window.location.reload(1);
+                        window.location.eload(1);
                         })
                     .fail(function(data) { errorAlert(data); });
             });
@@ -43,7 +43,7 @@ function exportJob(job_id, job_name, job_dir) {
                 }
             })
             .done(function() {
-                bootbox.alert("Model exported to Cloud Storage Successfully");
+                bootbox.dialog({title:"Success", message:"Model exported to Cloud Storage Successfully"});
                 })
             .fail(function(data) { errorAlert(data); });
         }
