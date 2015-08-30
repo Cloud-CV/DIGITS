@@ -14,8 +14,7 @@ from status import Status, StatusCls
 from django_import import *
 from django.contrib.auth.models import User
 from organizations.models import Organization
-from digitsdb.models import Job as WorkspaceJob
-# import digits.views.WORKSPACE 
+from app.models import Job as WorkspaceJob
 # NOTE: Increment this everytime the pickled object changes
 PICKLE_VERSION = 1
 
