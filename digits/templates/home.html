@@ -43,6 +43,7 @@ function exportJob(job_id, job_name, job_dir) {
                 }
             })
             .done(function() {
+                bootbox.hideAll();
                 bootbox.dialog({title:"Success", message:"Model exported to Cloud Storage Successfully"});
                 })
             .fail(function(data) { errorAlert(data); });

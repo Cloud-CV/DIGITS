@@ -16,23 +16,6 @@ New Image Classification Dataset
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<script type="text/javascript" charset="utf-8">
-    $(document).ready(function(){
-        namespace = ''; // change to an empty string to use the global namespace
-        var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-        // socket.on('progressbar', function(message){
-        //     $('#progressbar').val(message.percent);
-        // });
-
-        socket.on('my progressbar', function(msg) {
-            $( "#progressbar" ).progressbar({
-                value: msg.percent
-            });
-            console.log(msg.percent);
-            // $('#log').append('<br>Completed #' + msg.percent);
-        });
-    });
-</script>
 <div class="page-header">
     <h1>New Image Classification Dataset</h1>
 </div>
@@ -409,15 +392,7 @@ $("#folder_val").focusout(function(){
 $("#folder_train").focusout(function(){
     getTrainingFolder();
 });
-// $("form").submit(function(e){
-//     e.preventDefault();
-//     e.returnType = false; 
-//     $('#progressModal').modal('show');
-//     $('#progressModal').on('shown.bs.modal', function () {
-//         getValidationFolder();
-//         getTrainingFolder();
-//     });
-// });
+
 function getValidationFolder(){
     var validationFolder = $('#folder_val').val();
     if (validationFolder.indexOf('s3') > -1 || validationFolder.indexOf('dropbox') > -1 || validationFolder.indexOf('gdrive') > -1)

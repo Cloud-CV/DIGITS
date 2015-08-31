@@ -27,7 +27,7 @@ Loading Pretrained CaffeModel
             $( "#progressbar" ).progressbar({
                 value: msg.percent
             });
-            $('#log').append('<br>Completed #' + msg.percent);
+            // $('#log').append('<br>Completed #' + msg.percent);
         });
     });
 </script>
@@ -247,81 +247,120 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
 //$('#network-tabs a[href="#network-tab-'+$("#method").val()+'"]').tab('show');
             </script>
             <script type="text/javascript">
-                function checkForCloudStorage(){
-                    if ($('#network-tab-cloud-storage').hasClass('active') == true){
-
-                        $('#progressModal').modal('show');
-                        $.ajax(
-                        {
-                            type: 'POST',
-                            url: "http://deshraj.com:8000/api/download/",
-                            dataType: "json",
-                            async: false,
-                            data: {
-                                source_path: $("#custom_network_snapshot").val(),
-                                dest_path:"/home/digits_downloads/",
-                                session_id: '{{ request.cookies.get("sessionid") }}',
-                            },
-                            success: function(result){
-                                if(result['error']){
-                                    alert(result['error']);
-                                }
-                                $("#custom_network_snapshot").val(result['dest_path']);
-                            },
-                            error: function(jqXHR, textStatus, errorThrown){
-                                alert(textStatus);
-                            }
-                        });
-                        $('#progressModal').modal('hide');
-                        $('#progressModal').modal('show');
-                        $.ajax(
-                        {
-                            type: 'POST',
-                            url: "http://deshraj.com:8000/api/download/",
-                            dataType: "json",
-                            async: false,
-                            data: {
-                                source_path: $("#custom_network").val(),
-                                dest_path:"/home/digits_downloads/",
-                                session_id: '{{ request.cookies.get("sessionid") }}',
-                            },
-                            success: function(result){
-                                if(result['error']){
-                                    alert(result['error']);
-                                }
-                                $("#custom_network").val(result['dest_path']);
-                            },
-                            error: function(jqXHR, textStatus, errorThrown){
-                                alert(textStatus);
-                            }
-                        });
-                        if ($('#mean_val').val() != ""){
+                function importCustomNetworkSnapshot(){
+                    var customNetworkSnapshot = $('#network-tab-cloud-storage .form-group #custom_network_snapshot').val();
+                    console.log("custom network working" + customNetworkSnapshot);
+                    if (customNetworkSnapshot.indexOf('s3') > -1 || customNetworkSnapshot.indexOf('dropbox') > -1 || customNetworkSnapshot.indexOf('gdrive') > -1){
+                            console.log("Inside the cloudstorage check");
+                        if ($('#network-tab-cloud-storage').hasClass('active')){
+                            console.log("Inside main if");
                             $('#progressModal').modal('show');
                             $.ajax(
                             {
                                 type: 'POST',
                                 url: "http://deshraj.com:8000/api/download/",
                                 dataType: "json",
-                                async: false,
+                                // async: false,
+                                data: {
+                                    source_path: $('#network-tab-cloud-storage .form-group #custom_network_snapshot').val(),
+                                    dest_path:"/home/digits_downloads/",
+                                    session_id: '{{ request.cookies.get("sessionid") }}',
+                                },
+                                success: function(result){
+                                    $('#progressModal').modal('hide');
+                                    if(result['error']){
+                                        alert(result['error']);
+                                    }
+                                    $('#network-tab-cloud-storage .form-group #custom_network_snapshot').val(result['dest_path']);
+                                    $('#custom_network_snapshot').val(result['dest_path']);
+                                },
+                                error: function(jqXHR, textStatus, errorThrown){
+                                    $('#progressModal').modal('hide');
+                                    alert(textStatus);
+                                }
+                            });
+                        }
+                    }
+                }
+
+                function importCustomNetwork(){
+                    var customNetwork = $('#network-tab-cloud-storage .form-group #custom_network').val();
+                    console.log("custom network working" + customNetwork);
+                    if (customNetwork.indexOf('s3') > -1 || customNetwork.indexOf('dropbox') > -1 || customNetwork.indexOf('gdrive') > -1){
+                            console.log("Inside the cloudstorage check");
+                        if ($('#network-tab-cloud-storage').hasClass('active')){
+                            console.log("Inside main if");
+                            $('#progressModal').modal('show');
+                            $.ajax(
+                            {
+                                type: 'POST',
+                                url: "http://deshraj.com:8000/api/download/",
+                                dataType: "json",
+                                // async: false,
+                                data: {
+                                    source_path: $('#network-tab-cloud-storage .form-group #custom_network').val(),
+                                    dest_path:"/home/digits_downloads/",
+                                    session_id: '{{ request.cookies.get("sessionid") }}',
+                                },
+                                success: function(result){
+                                    $('#progressModal').modal('hide');
+                                    if(result['error']){
+                                        alert(result['error']);
+                                    }
+                                    $('#network-tab-cloud-storage .form-group #custom_network').val(result['dest_path']);
+                                    $('#custom_network').val(result['dest_path']);
+                                },
+                                error: function(jqXHR, textStatus, errorThrown){
+                                    $('#progressModal').modal('hide');
+                                    alert(textStatus);
+                                }
+                            });
+                        }
+                    }
+                }
+                function importMeanImage(){
+                    var meanFile = $("#mean_file").val();
+                    console.log("mean file working" + meanFile);
+                    if (meanFile.indexOf('s3') > -1 || meanFile.indexOf('dropbox') > -1 || meanFile.indexOf('gdrive') > -1){
+                            console.log("Inside the cloudstorage check");
+                        if ($('#network-tab-cloud-storage').hasClass('active')){
+                            console.log("Inside main if");
+                            $('#progressModal').modal('show');
+                            $.ajax(
+                            {
+                                type: 'POST',
+                                url: "http://deshraj.com:8000/api/download/",
+                                dataType: "json",
+                                // async: false,
                                 data: {
                                     source_path: $("#mean_file").val(),
                                     dest_path:"/home/digits_downloads/",
                                     session_id: '{{ request.cookies.get("sessionid") }}',
                                 },
                                 success: function(result){
+                                    $('#progressModal').modal('hide');
                                     if(result['error']){
                                         alert(result['error']);
                                     }
                                     $("#mean_file").val(result['dest_path']);
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
+                                    $('#progressModal').modal('hide');
                                     alert(textStatus);
                                 }
                             });
-                            $('#progressModal').modal('hide');
                         }
                     }
                 }
+                $("#mean_file").focusout(function(){
+                    importMeanImage();
+                });
+                $("#network-tab-cloud-storage .form-group #custom_network_snapshot").focusout(function(){
+                    importCustomNetworkSnapshot();
+                });
+                $('#network-tab-cloud-storage .form-group #custom_network').focusout(function(){
+                    importCustomNetwork();
+                });
             </script>
         </div>    
     </div>
@@ -341,7 +380,7 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
 </div>
 <script>
     $( "#progressbar" ).progressbar({
-      value: 0
+      value: false
     });
 </script>
 {% endblock %}
