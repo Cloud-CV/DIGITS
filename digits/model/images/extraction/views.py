@@ -27,6 +27,7 @@ from digits.model import tasks
 from forms import PretrainedFeatureExtractionModelForm
 from job import FeatureExtractionModelJob
 from digits.status import Status
+from digits.workspaces import get_workspace
 
 NAMESPACE   = '/models/images/extraction'
 
@@ -36,9 +37,11 @@ def feature_extraction_model_new():
     """
     Return a form for a new FeatureExtractionModelJob for feature extraction.
     """
+    workspace = get_workspace(flask.request.url)
     form = PretrainedFeatureExtractionModelForm()
     return flask.render_template('models/images/extraction/new.html',
             form = form,
+            workspace = workspace,
             )
 
 @app.route(NAMESPACE + '.json', methods=['POST'])
@@ -50,6 +53,7 @@ def feature_extraction_model_create():
 
     Returns JSON when requested: {job_id,name,status} or {errors:[]}
     """
+    workspace = get_workspace(flask.request.url)
     form = PretrainedFeatureExtractionModelForm()
 
     if not form.validate_on_submit():
@@ -58,6 +62,7 @@ def feature_extraction_model_create():
         else:
             return flask.render_template('models/images/extraction/new.html',
                     form = form,
+                    workspace = workspace,
                     ), 400
 
     job = None
@@ -167,14 +172,14 @@ def feature_extraction_model_create():
         if request_wants_json():
             return flask.jsonify(job.json_dict())
         else:
-            return flask.redirect(flask.url_for('models_show', job_id=job.id()))
+            return flask.redirect(flask.url_for('models_show', job_id=job.id())+'?workspace='+workspace)
 
     except:
         if job:
             scheduler.delete_job(job)
         raise
 
-def show(job):
+def show(job, *args):
     """
     Called from digits.model.views.models_show()
     """
@@ -197,7 +202,8 @@ def show(job):
         meta_data['InputDimensions'] = net.blobs['data'].data.shape
         meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
 
-    return flask.render_template('models/images/extraction/show.html', job=job, meta_data=meta_data)
+    workspace = args[0]
+    return flask.render_template('models/images/extraction/show.html', job=job, meta_data=meta_data, workspace = workspace)
 
 @app.route(NAMESPACE + '/large_graph', methods=['GET'])
 @autodoc('models')
@@ -205,9 +211,10 @@ def feature_extraction_model_large_graph():
     """
     Show the loss/accuracy graph, but bigger
     """
+    workspace = get_workspace(flask.request.url)
     job = job_from_request()
 
-    return flask.render_template('models/images/extraction/large_graph.html', job=job)
+    return flask.render_template('models/images/extraction/large_graph.html', job=job, workspace = workspace)
 
 @app.route(NAMESPACE + '/classify_one.json', methods=['POST'])
 @app.route(NAMESPACE + '/classify_one', methods=['POST', 'GET'])
@@ -218,6 +225,7 @@ def feature_extraction_model_classify_one():
 
     Returns JSON when requested: {predictions: {category: confidence,...}}
     """
+    workspace = get_workspace(flask.request.url)
     job = job_from_request()
 
     image = None
@@ -315,6 +323,7 @@ def feature_extraction_model_classify_one():
                 image_src       = utils.image.embed_image_html(image),
                 predictions     = predictions,
                 visualizations  = visualizations,
+                workspace = workspace,
                 )
 
 @app.route(NAMESPACE + '/classify_many.json', methods=['POST'])
@@ -326,6 +335,7 @@ def feature_extraction_model_classify_many():
 
     Returns JSON when requested: {classifications: {filename: [[category,confidence],...],...}}
     """
+    workspace = get_workspace(flask.request.url)
     job = job_from_request()
 
     image_list = flask.request.files['image_list']
@@ -460,6 +470,7 @@ def feature_extraction_model_classify_many():
         return flask.render_template('models/images/extraction/classify_many.html',
                 paths=paths,
                 classifications=classifications,
+                workspace = workspace,
                 )
 
 @app.route(NAMESPACE + '/top_n', methods=['POST'])
@@ -468,6 +479,7 @@ def extraction_model_top_n():
     """
     Classify many images and show the top N images per category by confidence
     """
+    workspace = get_workspace(flask.request.url)
     job = job_from_request()
 
     image_list = flask.request.files.get['image_list']
@@ -542,5 +554,6 @@ def extraction_model_top_n():
     return flask.render_template('models/images/extraction/top_n.html',
             job=job,
             results=results,
+            workspace = workspace,
             )
 
