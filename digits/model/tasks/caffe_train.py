@@ -955,7 +955,7 @@ class CaffeTrainTask(TrainTask):
         return False
 
     @override
-    def infer_many(self, data, snapshot_epoch=None, layers=None):
+    def infer_many(self, data, snapshot_epoch=None, layers=None, batch_size=None):
         if isinstance(self.dataset, ImageClassificationDatasetJob):
             return self.classify_many(data, snapshot_epoch=snapshot_epoch, layers=layers)
         raise NotImplementedError()
@@ -1001,7 +1001,8 @@ class CaffeTrainTask(TrainTask):
             data_shape += (self.dataset.image_dims[0], self.dataset.image_dims[1])
 
         # Handle csv input of layer names.
-        layers = [layer.strip() for layer in layers.split(',')]
+        if layers:
+            layers = [layer.strip() for layer in layers.split(',')]
 
         scores = None
         visualizations_all = None

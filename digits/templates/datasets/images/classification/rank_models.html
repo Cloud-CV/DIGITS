@@ -1,0 +1,41 @@
+
+<div class="row">
+    <h3 style="text-align:center">{{ dataset.name() }} <span class="badge">{{ dataset.id() }}</span></h3>
+    <div class="col-sm-6">
+        <h4>Models</h4>
+        <ul class="list-group">
+            {% if len_models > 0: %}
+                {% for idx in range(len_models): %}
+                    <li class="list-group-item">
+                    <span class="badge">{{ models[idx]['score'] }}%</span>
+                    {{ models[idx]['model'].name() }}
+                    </li>
+                {% endfor %}
+            {% else: %}
+                {{ models[0]['model'] }}
+            {% endif %}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div id="chart"></div>
+    <script>
+    var chart = c3.generate({
+        data: {
+            columns: [
+                {% for idx in range(len_models): %}
+                    ["{{models[idx]['model'].name()}}", "{{models[idx]['score']}}"],
+                {% endfor %}
+            ],
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.5 // this makes bar width 50% of length between ticks
+            }
+            // or
+            //width: 100 // this makes bar width 100px
+        }
+    });
+    </script>
+</div>

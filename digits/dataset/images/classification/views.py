@@ -3,7 +3,9 @@
 import os
 
 import flask
+import werkzeug.exceptions
 
+from digits.config import config_value
 from digits import utils
 from digits.utils.routing import request_wants_json
 from digits.webapp import app, scheduler, autodoc
@@ -269,3 +271,118 @@ def show(job, *args):
     workspace = args[0]
     return flask.render_template('datasets/images/classification/show.html', job=job, workspace = workspace)
 
+def models_compare(dataset_job):
+    """
+    Called from digits.dataset.views.dataset_models_compare()
+    """
+    from digits import model
+    jobs = get_job_list(model.ModelJob, False)
+
+    dataset_models = []
+    for job in jobs:
+        if job.dataset.id()==dataset_job.id():
+            dataset_models.append(job)
+   
+    return flask.render_template('datasets/images/classification/compare.html', job=dataset_job, dataset_models=dataset_models)
+
+
+@app.route(NAMESPACE + '/rank/<dataset_job_id>', methods=['POST'])
+def rank_models(dataset_job_id):
+    """
+    Rank the models based on their performance on the validation set of database.
+    """
+    dataset = scheduler.get_job(dataset_job_id)
+
+    models = []
+    
+    for var in flask.request.form:
+        if var == 'top-k':
+            try:
+                top_k = int(flask.request.form['top-k'])
+            except:
+                top_k = 5# Default value
+        elif var == 'class-ids':
+            try:
+                class_ids = [x.strip() for x in str(flask.request.form['class-ids']).split(',')]
+            except:
+                class_ids = ['all']
+        else:
+            model_id = var
+            models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
+
+    if not models:
+        models.append({'model' : 'Select a model using the checkbox to compare', 'score' : '---'})
+        return flask.render_template('datasets/images/classification/rank_models.html',
+                dataset = dataset,
+                models = models,
+                len_models = 0
+                )
+    
+    val_images_file = config_value('jobs_dir')+'/'+dataset_job_id+'/'+utils.constants.VAL_FILE
+    val_images = []
+    with open(val_images_file, 'r') as val_data:
+        for line in val_data.readlines():
+            if (line.split()[1] in class_ids) or ('all' in class_ids):
+                image = {'image': line.split()[0], 'label': line.split()[1]}
+                val_images.append(image)
+    
+    if not val_images:
+        raise werkzeug.exceptions.BadRequest('Failed to fetch validation images. Please check the class-IDs')
+
+    db_task = dataset.train_db_task()
+    height = db_task.image_dims[0]
+    width = db_task.image_dims[1]
+
+    images = []
+    for idx in range(len(val_images)):
+        image = utils.image.load_image(val_images[idx]['image'])
+        image = utils.image.resize_image(image, height, width,
+                channels = db_task.image_dims[2],
+                resize_mode = db_task.resize_mode,
+                )
+        images.append(image)
+
+    model_score = []
+    for idx in range(len(models)):
+        model_score.append(0)
+        model = models[idx]['model']
+        if model.train_task().crop_size:
+            height = job.train_task().crop_size
+            width = job.train_task().crop_size
+            for image in images:
+                image = utils.image.resize_image(image, height, width,
+                        channels = db_task.image_dims[2],
+                        resize_mode = db_task.resize_mode,
+                        )
+
+        epoch = float(model.train_task().snapshots[-1][1])
+
+        labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
+
+        # Taking only the Top-K results.
+        indices = (-scores).argsort()[:, :top_k]
+        classifications = []
+        for image_index, index_list in enumerate(indices):
+            top_k_labels = []
+            for i in index_list:
+                top_k_labels.append(labels[i])
+            
+            if val_images[image_index]['label'] in top_k_labels:
+                model_score[idx]+=1
+       
+        models[idx]['score'] = round(float(model_score[idx]*100)/len(images),2)
+
+    models = sorted(models, key=lambda k: k['score'], reverse=True)
+
+    return flask.render_template('datasets/images/classification/rank_models.html',
+            dataset = dataset,
+            models = models,
+            len_models = len(models)
+            )
+
+def get_job_list(cls, running):
+    return sorted(
+            [j for j in scheduler.jobs if isinstance(j, cls) and j.status.is_running() == running],
+            key=lambda j: j.status_history[0][1],
+            reverse=True,
+            )

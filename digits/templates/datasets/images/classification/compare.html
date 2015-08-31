@@ -1,0 +1,117 @@
+{# Copyright (c) 2014-2015, NVIDIA CORPORATION.  All rights reserved. #}
+
+{% from "helper.html" import print_flashes %}
+
+{% extends "job.html" %}
+
+{% block title %}
+Models Evaluation on Dataset
+{% endblock %}
+
+{% block nav %}
+<li class="active"><a href="">Evaluate Models</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Model Evaluation on Dataset</h1>
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="well">
+            <h4 class='text-center'>Models</h4>
+            <br/>
+            <form id="compare-model-form"
+                enctype="multipart/form-data"
+                method="post"
+                onkeypress="return event.keyCode != 13;" {# Disable enter to submit #}
+                action="{{ url_for('rank_models', dataset_job_id=job.id()) }}"
+                >
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <b>Top-K :</b>
+                                <div class="input-group">
+                                    <input type="text" id="top-k" name="top-k">
+                                    <span name="top-k-explanation"
+                                        class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                        data-container="body"
+                                        title="Provide what value of K to use for Top-K evaluations of each model. [Default : 5]"
+                                    ></span>
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <b>Class Label IDs :</b>
+                                <div class="input-group">
+                                    <input type="text" id="class-ids" name="class-ids">
+                                    <span name="class-ids-explanation"
+                                        class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                        data-container="body"
+                                        title="Type in the specific classes Label-ID(s) to obtain class-based evaluation. Provide comma-seperated-values in case of multiple classes. Type all for overall comparision"
+                                    ></span>
+                                </div>
+                        </div>
+                        <h5><i>Models Evaluated on this Dataset</i></h5>
+                        {% for model in dataset_models: %}
+                            <div class="form-group">   
+                                <label for="{{model.id()}}">
+                                    <input type="checkbox" id="{{model.id()}}" value="{{model.id()}}" name="{{model.id()}}">                              
+                                    <a href="{{url_for('show_job', job_id=model.id())}}" target="_blank"> |> {{ model.name() }}</a>
+                                </label>          
+                            </div>
+                        {% endfor %}
+                        <button name="compare-model-btn" onClick="return compareModel();" class="btn btn-primary">Compare Models</button>
+                        <!--input type="submit" class="btn btn-primary" value="Compare Models"-->
+                        <span name="compare-model-explanation"
+                            class="explanation-tooltip glyphicon glyphicon-question-sign"
+                            data-container="body"
+                            title="The selected models will be evaluated on the validation set of the dataset and their performance will be ranked."
+                            ></span>
+                    </div>
+                </div>
+            </form>
+            <script>
+function compareModel() {
+    // grab all form data
+    var formData = new FormData($("#compare-model-form")[0]);
+
+    $.ajax("{{url_for('rank_models', dataset_job_id=job.id())}}",
+    {
+        type: "POST",
+        data: formData,
+        // options to tell jQuery not to process data or worry about content-type
+        cache: false,
+        contentType: false,
+        processData: false,
+    })
+    .done(function(data) {
+        bootbox.alert({
+            message: 'Loading...',
+            animate: false,
+            className: "wide-bootbox"
+        });
+        // Do this after the page loads so javascript works
+        $('div.bootbox-body').html(data);
+        $(".wide-bootbox").animate({scrollTop: 0}, "");
+    })
+    .fail(function(data) { errorAlert(data); });
+    return false;
+}
+        </script>     
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="well">
+            <h4 class='text-center'>Dataset</h4>
+            {% if job %}
+            {% with dataset = job %}
+            {% include 'datasets/summary.html' %}
+            {% endwith %}
+            {% endif %}
+       </div>
+    </div>
+</div>
+
+{% endblock %}
+

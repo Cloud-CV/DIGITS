@@ -120,6 +120,21 @@ def show_job(job_id):
     else:
         raise werkzeug.exceptions.BadRequest('Invalid job type')
 
+@app.route('/jobs/<job_id>/evaluate', methods=['GET'])
+@autodoc('jobs')
+def evaluate_models(job_id):
+    """
+    Compares performance of models on a given dataset.
+    """
+    job = scheduler.get_job(job_id)
+    if job is None:
+        raise werkzeug.exceptions.NotFound('Job not found')
+
+    if isinstance(job, dataset.DatasetJob):
+        return flask.redirect(flask.url_for('dataset_models_compare', dataset_job_id=job_id))
+    else:
+        raise werkzeug.exceptions.BadRequest('Invalid Job type : should be a datasetJob')
+
 @app.route('/jobs/<job_id>', methods=['PUT'])
 @autodoc('jobs')
 def edit_job(job_id):
