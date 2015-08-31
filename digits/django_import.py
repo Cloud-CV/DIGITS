@@ -1,14 +1,14 @@
 import os, sys
 # If your project is in '/home/user/mysite/polls', you have to put sys.path.extend(['/home/user/mysite/'])
-sys.path.extend(['/home/ubuntu/cloudcv/cloudcv_deshraj',
-'/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7',
-'/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/plat-x86_64-linux-gnu', 
-'/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/lib-tk', 
-'/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/lib-old', 
-'/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/lib-dynload', 
-'/usr/lib/python2.7', '/usr/lib/python2.7/plat-x86_64-linux-gnu', 
-'/usr/lib/python2.7/lib-tk', '/home/ubuntu/cloudcv/cloudcv_deshraj/env/local/lib/python2.7/site-packages', 
-'/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/site-packages']) 
+# sys.path.extend(['/home/ubuntu/cloudcv/cloudcv_deshraj',
+# '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7',
+# '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/plat-x86_64-linux-gnu', 
+# '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/lib-tk', 
+# '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/lib-old', 
+# '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/lib-dynload', 
+# '/usr/lib/python2.7', '/usr/lib/python2.7/plat-x86_64-linux-gnu', 
+# '/usr/lib/python2.7/lib-tk', '/home/ubuntu/cloudcv/cloudcv_deshraj/env/local/lib/python2.7/site-packages', 
+# '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/site-packages']) 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cloudcv17.settings")
 from django.conf import settings
