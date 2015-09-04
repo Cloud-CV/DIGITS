@@ -305,12 +305,7 @@ def rank_models(dataset_job_id):
             models.append({'model_id': model_id, 'model' : scheduler.get_job(model_id)})
 
     if not models:
-        models.append({'model' : 'Select a model using the checkbox to compare', 'score' : '---'})
-        return flask.render_template('datasets/images/classification/rank_models.html',
-                dataset = dataset,
-                models = models,
-                len_models = 0
-                )
+        raise werkzeug.exceptions.BadRequest('Select a model using the checkboxes to compare validation scores')
     
     val_images_file = config_value('jobs_dir')+'/'+dataset_job_id+'/'+utils.constants.VAL_FILE
     val_images = []
@@ -340,22 +335,33 @@ def rank_models(dataset_job_id):
     for idx in range(len(models)):
         model_score.append(0)
         model = models[idx]['model']
-        if model.train_task().crop_size:
-            height = job.train_task().crop_size
-            width = job.train_task().crop_size
-            for image in images:
-                image = utils.image.resize_image(image, height, width,
-                        channels = db_task.image_dims[2],
-                        resize_mode = db_task.resize_mode,
-                        )
+        
+        if not model.train_task().validation_data:
+            if model.train_task().crop_size:
+                height = job.train_task().crop_size
+                width = job.train_task().crop_size
+            
+                img_idx = 0
+                for image in images:
+                    image = utils.image.resize_image(image, height, width,
+                            channels = db_task.image_dims[2],
+                            resize_mode = db_task.resize_mode,
+                            )
+                    images[img_idx] = image
+                    img_idx += 1
 
-        epoch = float(model.train_task().snapshots[-1][1])
+            epoch = float(model.train_task().snapshots[-1][1])
 
-        labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
+            labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
+
+        else:
+            print "[DEBUG] Loading stored validation data."
+            validation_data = model.train_task().validation_data
+            labels = validation_data['labels']
+            scores = validation_data['scores']
 
         # Taking only the Top-K results.
         indices = (-scores).argsort()[:, :top_k]
-        classifications = []
         for image_index, index_list in enumerate(indices):
             top_k_labels = []
             for i in index_list:
