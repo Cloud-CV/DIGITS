@@ -55,6 +55,7 @@ class CaffeTrainTask(TrainTask):
         self.loaded_snapshot_epoch = None
         self.image_mean = None
         self.solver = None
+        self.validation_data = None
 
         self.solver_file = constants.CAFFE_SOLVER_FILE
         self.train_val_file = constants.CAFFE_TRAIN_VAL_FILE
@@ -531,7 +532,48 @@ class CaffeTrainTask(TrainTask):
     @override
     def after_run(self):
         super(CaffeTrainTask, self).after_run()
+
+        self.update_validation_accuracy()
         self.caffe_log.close()
+
+    def update_validation_accuracy(self):
+        dataset = self.dataset
+
+        print "[AfterTrain] Caching validation data..."
+        val_images_file = config_value('jobs_dir')+'/'+dataset.id()+'/'+utils.constants.VAL_FILE
+        val_images = []
+        with open(val_images_file, 'r') as val_data:
+            for line in val_data.readlines():
+                image = {'image': line.split()[0], 'label': line.split()[1]}
+                val_images.append(image)
+
+        if not val_images:
+            raise werkzeug.exceptions.BadRequest('Failed to fetch validation images from dataset.')
+
+        db_task = dataset.train_db_task()
+        height = db_task.image_dims[0]
+        width = db_task.image_dims[1]
+        if self.crop_size:
+            height = self.crop_size
+            width = self.crop_size
+
+        images = []
+        for idx in range(len(val_images)):
+            image = utils.image.load_image(val_images[idx]['image'])
+            image = utils.image.resize_image(image, height, width,
+                    channels = db_task.image_dims[2],
+                    resize_mode = db_task.resize_mode,
+                    )
+            images.append(image)
+        
+        epoch = float(self.snapshots[-1][1]) 
+
+        labels, scores, visualizations = self.infer_many(images, snapshot_epoch=epoch)
+
+        validation_data = {'labels': labels, 'scores':scores}
+        self.validation_data = validation_data
+        
+        return
 
     @override
     def after_runtime_error(self):
