@@ -258,7 +258,7 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                             $.ajax(
                             {
                                 type: 'POST',
-                                url: "http://deshraj.com:8000/api/download/",
+                                url: "http://localhost:8000/api/download/",
                                 dataType: "json",
                                 // async: false,
                                 data: {
@@ -269,14 +269,21 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                 success: function(result){
                                     $('#progressModal').modal('hide');
                                     if(result['error']){
-                                        alert(result['error']);
+                                        console.log('error occured while download api.');
+                                        bootbox.dialog({
+                                            title: "Error Occured",
+                                            message: result['error']
+                                        });
                                     }
                                     $('#network-tab-cloud-storage .form-group #custom_network_snapshot').val(result['dest_path']);
                                     $('#custom_network_snapshot').val(result['dest_path']);
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
                                     $('#progressModal').modal('hide');
-                                    alert(textStatus);
+                                        bootbox.dialog({
+                                            title: "Error Occured",
+                                            message: textStatus
+                                        });
                                 }
                             });
                         }
@@ -294,7 +301,7 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                             $.ajax(
                             {
                                 type: 'POST',
-                                url: "http://deshraj.com:8000/api/download/",
+                                url: "http://localhost:8000/api/download/",
                                 dataType: "json",
                                 // async: false,
                                 data: {
@@ -305,14 +312,22 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                 success: function(result){
                                     $('#progressModal').modal('hide');
                                     if(result['error']){
-                                        alert(result['error']);
+                                        console.log('error occured while download api for custom network.');
+                                        bootbox.dialog({
+                                            title: "Error Occured",
+                                            message: result['error']
+                                        });
                                     }
                                     $('#network-tab-cloud-storage .form-group #custom_network').val(result['dest_path']);
                                     $('#custom_network').val(result['dest_path']);
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
                                     $('#progressModal').modal('hide');
-                                    alert(textStatus);
+                                    consle.log("Error in AJAX call");
+                                        bootbox.dialog({
+                                            title: "Error Occured",
+                                            message: textStatus
+                                        });
                                 }
                             });
                         }
@@ -329,7 +344,7 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                             $.ajax(
                             {
                                 type: 'POST',
-                                url: "http://deshraj.com:8000/api/download/",
+                                url: "http://localhost:8000/api/download/",
                                 dataType: "json",
                                 // async: false,
                                 data: {
@@ -340,13 +355,19 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                 success: function(result){
                                     $('#progressModal').modal('hide');
                                     if(result['error']){
-                                        alert(result['error']);
+                                        bootbox.dialog({
+                                            title: "Error Occured",
+                                            message: result['error']
+                                        });
                                     }
                                     $("#mean_file").val(result['dest_path']);
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
                                     $('#progressModal').modal('hide');
-                                    alert(textStatus);
+                                        bootbox.dialog({
+                                            title: "Error Occured",
+                                            message: textStatus
+                                        });
                                 }
                             });
                         }
