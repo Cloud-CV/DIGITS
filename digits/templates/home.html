@@ -29,24 +29,35 @@ function deleteJob(job_id) {
 
 function exportJob(job_id, job_name, job_dir) {
     bootbox.prompt("Enter the path on Cloud Storage to export", function(result) {
-        if (result){
-            if(result.substr(result.length-1)!='/')
-                result+='/';
-            bootbox.dialog({title:"Exporting model to Cloud Sotrage", message:"Please sit back and wait for a while exporting completes...",function(){}});
-            $.ajax({
-                url:'http://localhost:8000/api/upload/',
-                type: "POST",
-                data:{
-                    source_path: job_dir,
-                    dest_path: result+job_name+"/",
-                    session_id: '{{ request.cookies.get("sessionid") }}',
-                }
-            })
-            .done(function() {
-                bootbox.hideAll();
-                bootbox.dialog({title:"Success", message:"Model exported to Cloud Storage Successfully"});
+            if (result){
+                if (result.indexOf('s3') > -1 || result.indexOf('dropbox') > -1 || result.indexOf('gdrive') > -1){
+                if(result.substr(result.length-1)!='/')
+                    result+='/';
+                bootbox.dialog({title:"In Progress", message:"Exporting model to Cloud Storage. Note: This may take some time ...",function(){}});
+                $.ajax({
+                    url:'http://localhost:8000/api/upload/',
+                    type: "POST",
+                    data:{
+                        source_path: job_dir,
+                        dest_path: result+job_name+"/",
+                        session_id: '{{ request.cookies.get("sessionid") }}',
+                    }
                 })
-            .fail(function(data) { errorAlert(data); });
+                .done(function(result) {
+                    bootbox.hideAll();
+                    if (result['error']){
+                        bootbox.dialog({title:"Error", message: result['error'] });
+                    }
+                    else{
+                        bootbox.dialog({title:"Success", message:"Model exported to Cloud Storage Successfully"});
+                    }
+                    })
+                .fail(function(data) { errorAlert(data); });
+            }
+            else{
+                bootbox.hideAll();
+                bootbox.dialog({title:"Error", message:"Enter a valid Cloud Storage path"});
+            }
         }
     });
     return false;

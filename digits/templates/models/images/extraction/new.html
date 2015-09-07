@@ -249,11 +249,11 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
             <script type="text/javascript">
                 function importCustomNetworkSnapshot(){
                     var customNetworkSnapshot = $('#network-tab-cloud-storage .form-group #custom_network_snapshot').val();
-                    console.log("custom network working" + customNetworkSnapshot);
+                    //console.log("custom network working" + customNetworkSnapshot);
                     if (customNetworkSnapshot.indexOf('s3') > -1 || customNetworkSnapshot.indexOf('dropbox') > -1 || customNetworkSnapshot.indexOf('gdrive') > -1){
-                            console.log("Inside the cloudstorage check");
+                            //console.log("Inside the cloudstorage check");
                         if ($('#network-tab-cloud-storage').hasClass('active')){
-                            console.log("Inside main if");
+                            //console.log("Inside main if");
                             $('#progressModal').modal('show');
                             $.ajax(
                             {
@@ -269,7 +269,7 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                 success: function(result){
                                     $('#progressModal').modal('hide');
                                     if(result['error']){
-                                        console.log('error occured while download api.');
+                                        //console.log('error occured while download api.');
                                         bootbox.dialog({
                                             title: "Error Occured",
                                             message: result['error']
@@ -294,11 +294,11 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
 
                 function importCustomNetwork(){
                     var customNetwork = $('#network-tab-cloud-storage .form-group #custom_network').val();
-                    console.log("custom network working" + customNetwork);
+                    //console.log("custom network working" + customNetwork);
                     if (customNetwork.indexOf('s3') > -1 || customNetwork.indexOf('dropbox') > -1 || customNetwork.indexOf('gdrive') > -1){
-                            console.log("Inside the cloudstorage check");
+                            //console.log("Inside the cloudstorage check");
                         if ($('#network-tab-cloud-storage').hasClass('active')){
-                            console.log("Inside main if");
+                            //console.log("Inside main if");
                             $('#progressModal').modal('show');
                             $.ajax(
                             {
@@ -314,7 +314,7 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                 success: function(result){
                                     $('#progressModal').modal('hide');
                                     if(result['error']){
-                                        console.log('error occured while download api for custom network.');
+                                        //console.log('error occured while download api for custom network.');
                                         bootbox.dialog({
                                             title: "Error Occured",
                                             message: result['error']
@@ -338,11 +338,11 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                 }
                 function importMeanImage(){
                     var meanFile = $("#mean_file").val();
-                    console.log("mean file working" + meanFile);
+                    //console.log("mean file working" + meanFile);
                     if (meanFile.indexOf('s3') > -1 || meanFile.indexOf('dropbox') > -1 || meanFile.indexOf('gdrive') > -1){
-                            console.log("Inside the cloudstorage check");
+                            //console.log("Inside the cloudstorage check");
                         if ($('#network-tab-cloud-storage').hasClass('active')){
-                            console.log("Inside main if");
+                            //console.log("Inside main if");
                             $('#progressModal').modal('show');
                             $.ajax(
                             {
