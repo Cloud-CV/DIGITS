@@ -275,8 +275,10 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                             message: result['error']
                                         });
                                     }
+                                    else{
                                     $('#network-tab-cloud-storage .form-group #custom_network_snapshot').val(result['dest_path']);
                                     $('#custom_network_snapshot').val(result['dest_path']);
+                                    }
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
                                     $('#progressModal').modal('hide');
@@ -318,12 +320,13 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                             message: result['error']
                                         });
                                     }
-                                    $('#network-tab-cloud-storage .form-group #custom_network').val(result['dest_path']);
-                                    $('#custom_network').val(result['dest_path']);
+                                    else{
+                                        $('#network-tab-cloud-storage .form-group #custom_network').val(result['dest_path']);
+                                        $('#custom_network').val(result['dest_path']);
+                                    }
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
                                     $('#progressModal').modal('hide');
-                                    consle.log("Error in AJAX call");
                                         bootbox.dialog({
                                             title: "Error Occured",
                                             message: textStatus
@@ -360,7 +363,9 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
                                             message: result['error']
                                         });
                                     }
-                                    $("#mean_file").val(result['dest_path']);
+                                    else{
+                                        $("#mean_file").val(result['dest_path']);
+                                    }
                                 },
                                 error: function(jqXHR, textStatus, errorThrown){
                                     $('#progressModal').modal('hide');
