@@ -10,7 +10,7 @@ import os, sys
 # '/usr/lib/python2.7/lib-tk', '/home/ubuntu/cloudcv/cloudcv_deshraj/env/local/lib/python2.7/site-packages', 
 # '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/site-packages']) 
 import sys
-sys.append('/home/py-dev/Documents/Workspaces')
+sys.path.append('/home/py-dev/Documents/Workspaces')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Workspapces.settings")
 from django.conf import settings
 from redis_sessions_fork.session import SessionStore
