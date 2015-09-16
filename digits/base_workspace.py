@@ -1,5 +1,5 @@
 from django_import import *
-from app.models import Job as WorkspaceJob
+from digitsdb.models import Job as WorkspaceJob
 from organizations.models import OrganizationUser, Organization
 from urlparse import urlparse, parse_qs
 from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY, load_backend

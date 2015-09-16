@@ -9,11 +9,12 @@ import os, sys
 # '/usr/lib/python2.7', '/usr/lib/python2.7/plat-x86_64-linux-gnu', 
 # '/usr/lib/python2.7/lib-tk', '/home/ubuntu/cloudcv/cloudcv_deshraj/env/local/lib/python2.7/site-packages', 
 # '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/site-packages']) 
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cloudcv17.settings")
+import sys
+sys.append('/home/py-dev/Documents/Workspaces')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Workspapces.settings")
 from django.conf import settings
 from redis_sessions_fork.session import SessionStore
-from webapp import socketio
+# from webapp import socketio
 
 import os
 import time
