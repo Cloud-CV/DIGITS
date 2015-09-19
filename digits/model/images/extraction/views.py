@@ -73,7 +73,6 @@ def feature_extraction_model_create():
     job = None
     try:
         job = FeatureExtractionModelJob(
-                workspace = workspace,
                 name = form.model_name.data,
                 )
         network = caffe_pb2.NetParameter()
