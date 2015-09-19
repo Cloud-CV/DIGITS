@@ -385,74 +385,90 @@ $(".explanation-tooltip").tooltip();
 </script>
 <script type="text/javascript">
 
-$("#folder_val").focusout(function(){
-    getValidationFolder();
+// $("#folder_val").focusout(function(){
+    $("form").submit(function (e) {
+    getValidationFolder(e);
+// }
 });
 
-$("#folder_train").focusout(function(){
-    getTrainingFolder();
-});
-
-function getValidationFolder(){
+function getValidationFolder(e){
     var validationFolder = $('#folder_val').val();
     if (validationFolder.indexOf('s3') > -1 || validationFolder.indexOf('dropbox') > -1 || validationFolder.indexOf('gdrive') > -1)
-            {
+        {
                 console.log("Validation Cloud Storage call");
-                $('#progressModal').modal('show');
+                // $('#progressModal').modal('show');
                 $.ajax(
                 {
                     type: 'POST',
-                    url: "http://deshraj.com:8000/api/download/",
+                    url: "http://localhost:8000/api/download/",
                     // context: $form,
                     dataType: "json",
-                    // async: false,
+                    async: false,
                     data: {
                         source_path: $("#folder_val").val(),
                         dest_path:"/home/cloudcv/validation",
                         session_id: '{{ request.cookies.get("sessionid") }}',
                     },
                     success: function(result){
-                        $("#folder_val").val(result['dest_path']);
-                        $('#progressModal').modal('hide');
+                         if (result['error']){
+                            e.preventDefault();
+                            bootbox.dialog({title:"Error", message: result['error'] });
+                        }
+                        else{   
+                            $("#folder_val").val(result['dest_path']);
+                            // $('#progressModal').modal('hide');
+                            getTrainingFolder();
+                        }
                     },
                     error: function(jqXHR, textStatus, errorThrown){
-                        alert("error");
+                        e.preventDefault(); 
+                        alert(textStatus);
                     },
                     complete: function(result){
-                        $('#progressModal').modal('hide');
+                        // $('#progressModal').modal('hide');
                     }
                 });
-            }
+    }
+    else{
+        getTrainingFolder(e);
+    }
 }
 
-function getTrainingFolder(){
+function getTrainingFolder(e){
     var trainFolder = $("#folder_train").val();
         if (trainFolder.indexOf('s3') > -1 || trainFolder.indexOf('dropbox') > -1 || trainFolder.indexOf('gdrive') > -1)
         {
             // var $form = $(this);
             console.log("Training Cloud Storage call");
-            $('#progressModal').modal('show');
+            // $('#progressModal').modal('show');
             $.ajax(
                 {
                     type: 'POST',
-                    url: "http://deshraj.com:8000/api/download/",
+                    url: "http://localhost:8000/api/download/",
                     // context: $form,
                     dataType: "json",
-                    // async: false,
+                    async: false,
                     data: {
                         source_path: $("#folder_train").val(),
                         dest_path:"/home/cloudcv/train",
                         session_id: '{{ request.cookies.get("sessionid") }}',
                     },
                     success: function(result){
-                        $("#folder_train").val(result['dest_path']);
-                        $('#progressModal').modal('hide');
+                         if (result['error']){
+                            e.preventDefault();
+                            bootbox.dialog({title:"Error", message: result['error'] });
+                        }
+                        else{   
+                            $("#folder_train").val(result['dest_path']);
+                            // $('#progressModal').modal('hide');
+                        }
                     },
                     error: function(jqXHR, textStatus, errorThrown){
+                        e.preventDefault();
                         alert(textStatus);
                     },
                     complete: function(){
-                        $('#progressModal').modal('hide');
+                        // $('#progressModal').modal('hide');
                     }
             });
         }

@@ -20,7 +20,7 @@ function deleteJob(job_id) {
                     $.ajax('/jobs/' + job_id+'?workspace={{ workspace.workspace_hash }}' ,
                         {type: "DELETE"})
                     .done(function() {
-                        window.location.eload(1);
+                        window.location.reload(1);
                         })
                     .fail(function(data) { errorAlert(data); });
             });
