@@ -11,7 +11,7 @@ import os, sys
 # '/home/ubuntu/cloudcv/cloudcv_deshraj/env/lib/python2.7/site-packages']) 
 import sys
 sys.path.append('/home/py-dev/Documents/Workspaces')
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Workspapces.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Workspaces.settings")
 from django.conf import settings
 from redis_sessions_fork.session import SessionStore
 # from webapp import socketio
