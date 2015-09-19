@@ -42,13 +42,13 @@ Models Evaluation on Dataset
                                 </div>
                         </div>
                         <div class="form-group">
-                            <b>Class Label IDs :</b>
+                            <b>Label IDs :</b>
                                 <div class="input-group">
-                                    <input type="text" id="class-ids" name="class-ids">
+                                    <input type="text" id="class-ids" name="class-ids" placeholder="all" default="all">
                                     <span name="class-ids-explanation"
                                         class="explanation-tooltip glyphicon glyphicon-question-sign"
                                         data-container="body"
-                                        title="Type in the specific classes Label-ID(s) to obtain class-based evaluation. Provide comma-seperated-values in case of multiple classes. Type all for overall comparision"
+                                        title="Compare the model performances on a subset of the validation set. Provide as comma-seperated-values the label-IDs of the classes to compare performance of models on those specific classes. Type in 'all' to compare models by performance on all classes."
                                     ></span>
                                 </div>
                         </div>
