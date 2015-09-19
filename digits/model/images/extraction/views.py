@@ -41,6 +41,73 @@ def feature_extraction_model_new():
             form = form,
             )
 
+############################################################
+# Code for downloading model from gist
+############################################################
+import os
+import yaml
+import urllib
+import hashlib
+import time
+import sys
+
+required_keys = ['caffemodel', 'caffemodel_url', 'sha1']
+
+def reporthook(count, block_size, total_size):
+    """
+    From http://blog.moleculea.com/2012/10/04/urlretrieve-progres-indicator/
+    """
+    global start_time
+    if count == 0:
+        start_time = time.time()
+        return
+    duration = time.time() - start_time
+    progress_size = int(count * block_size)
+    speed = int(progress_size / (1024 * duration))
+    percent = int(count * block_size * 100 / total_size)
+    sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
+                    (percent, progress_size / (1024 * 1024), speed, duration))
+    sys.stdout.flush()
+
+def parse_readme_frontmatter(dirname):
+    readme_filename = os.path.join(dirname, 'readme.md')
+    with open(readme_filename) as f:
+        lines = [line.strip() for line in f.readlines()]
+    top = lines.index('---')
+    bottom = lines[top + 1:].index('---')
+    frontmatter = yaml.load('\n'.join(lines[top + 1:bottom]))
+    assert all(key in frontmatter for key in required_keys)
+    return dirname, frontmatter
+
+def valid_dirname(dirname):
+    try:
+        return parse_readme_frontmatter(dirname)
+    except Exception as e:
+        print('ERROR: {}'.format(e))
+        raise argparse.ArgumentTypeError(
+            'Must be valid Caffe model directory with a correct readme.md')
+
+def download_model(gist_location):
+    dirname, frontmatter = valid_dirname(gist_location)
+    model_filename = os.path.join(dirname, frontmatter['caffemodel'])
+
+    if os.path.exists(model_filename) and model_checks_out():
+         print("Model already exists.")
+         return 1
+
+    def model_checks_out(filename=model_filename, sha1=frontmatter['sha1']):
+        with open(filename, 'r') as f:
+            return hashlib.sha1(f.read()).hexdigest() == sha1
+
+    urllib.urlretrieve(frontmatter['caffemodel_url'], model_filename, reporthook)
+    if not model_checks_out():
+        print('ERROR: model did not download correctly! Run this again.')
+        return -1
+    else:
+        return 0
+
+######################################################################################
+
 @app.route(NAMESPACE + '.json', methods=['POST'])
 @app.route(NAMESPACE, methods=['POST'])
 @autodoc(['models', 'api'])
@@ -83,16 +150,27 @@ def feature_extraction_model_create():
             print "Gist successfully downloaded"
 
             gist_location = digits_cwd+'/pretrained_models/'+gist_id+'/'+gist_id+'-master'
-            # Now download the .caffemodel file from the gist readme.
-            command= digits_cwd+'/scripts/download_model_binary.py '+gist_location
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-            process.wait()
-            for line in process.stdout:
-                print line,
-            if not process.returncode == 1:
-                print "Caffe model successfully downloaded from the caffe zoo."
-            else:
+            ###########
+            # MOHIT 
+            fl = download_model(gist_location)
+            if fl != 0:
+                if fl == 1:
+                    print "Model already exists"
+                else:
+                    print "Model download failed"
                 raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file')
+            #################
+            # Now download the .caffemodel file from the gist readme.
+            #command= digits_cwd+'/scripts/download_model_binary.py '+gist_location
+            #process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            #process.wait()
+            #for line in process.stdout:
+            #    print line,
+            #if not process.returncode == 1:
+            #    print "Caffe model successfully downloaded from the caffe zoo."
+            #else:
+            #    raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file')
+            #################
             
             for filename in os.listdir(gist_location):
                 if filename.endswith('.caffemodel'):
@@ -105,16 +183,28 @@ def feature_extraction_model_create():
             import subprocess
             
             model_gist_location = digits_cwd+'/pretrained_models/'+form.caffezoo_model.data
-            command = digits_cwd+'/scripts/download_model_binary.py '+model_gist_location
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-            process.wait()
-            for line in process.stdout:
-                print line,
-            if not process.returncode == 1:
-                print "Caffe model successfully loaded from the caffe zoo."
-            else:
-                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file from zoo.')
-            
+            ###########
+            # MOHIT 
+            fl = download_model(model_gist_location)
+            if fl != 0:
+                if fl == 1:
+                    print "Model already exists"
+                else:
+                    print "Model download failed"
+                raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file')
+
+            ################# 
+            #command = digits_cwd+'/scripts/download_model_binary.py '+model_gist_location
+            #process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            #process.wait()
+            #for line in process.stdout:
+            #    print line,
+            #if not process.returncode == 1:
+            #    print "Caffe model successfully loaded from the caffe zoo."
+            #else:
+            #    raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file from zoo.')
+            #################
+
             for filename in os.listdir(model_gist_location):
                 if filename.endswith('.caffemodel'):
                     pretrained_model = str(model_gist_location+'/'+filename).strip()

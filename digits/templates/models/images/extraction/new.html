@@ -179,9 +179,43 @@ $('#network-tabs a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
 $('#network-tabs a[href="#network-tab-custom"]').tab('show');
 //$('#network-tabs a[href="#network-tab-'+$("#method").val()+'"]').tab('show');
             </script>
-        </div>    
+        </div>
+        <!-- Tasks -->
+		    <div class="col-sm-4" style="float:right">
+		    <div class="panel-group">
+		        <div id="job-statuses" class="panel">
+		            <div class="panel-heading">
+		                <h4 class="panel-title">
+		                    Model Status
+		                </h4>
+		            </div>
+		            <div class="panel-collapse">
+		                <div class="panel-body">
+		                    <div class="panel-group">
+		                            <div id="model-status" class="panel">
+		                                    <div class="panel-body">
+		                                        <div class="task-progress">
+		                                            <div class="progress">
+		                                                {% set percentage = (100*0.5)|round|int %}
+		                                                <div class="progress-bar" style="width:{{percentage}}%">
+		                                                    {{percentage}}%
+		                                                </div>
+		                                            </div>
+		                                            Estimated time remaining: <span class="task-eta">10 mins</span>
+		                                            <br />
+		                                            <br />
+		                                        </div>
+		    
+		                                    </div>
+		                                </div>
+		                            </div>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		        </div>      
+		    </div>    
     </div>
-
 </form>
 
 {% endblock %}
