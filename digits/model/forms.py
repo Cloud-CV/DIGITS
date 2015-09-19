@@ -284,7 +284,7 @@ class PretrainedModelForm(Form):
             )
 
     # The options for this get set in the view (since they are dependent on the data type)
-    custom_network = wtforms.StringField('Path to network config (.protxt) file',
+    custom_network = wtforms.StringField('Path to network config (.prototxt) file',
             validators = [
                 validate_NetParameter,
                 ]
