@@ -8,6 +8,12 @@
 Loading Pretrained CaffeModel
 {% endblock %}
 
+{% block head %}
+    {% with namespace = "{{ NAMESPACE }}" %}
+        {% include "socketio.html" %}
+    {% endwith %}
+{% endblock %}
+
 {% block nav %}
 <li class="active"><a href="{{url_for('feature_extraction_model_new')}}">New Model</a></li>
 {% endblock %}
@@ -181,40 +187,46 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
             </script>
         </div>
         <!-- Tasks -->
-		    <div class="col-sm-4" style="float:right">
-		    <div class="panel-group">
-		        <div id="job-statuses" class="panel">
-		            <div class="panel-heading">
-		                <h4 class="panel-title">
-		                    Model Status
-		                </h4>
-		            </div>
-		            <div class="panel-collapse">
-		                <div class="panel-body">
-		                    <div class="panel-group">
+		<div class="row">
+			<div class="col-sm-4" style="float:right">
+			    <div class="panel-group">
+			        <div id="job-statuses" class="panel">
+			            <div class="panel-heading">
+			                <h4 class="panel-title">
+			                    Model Status
+			                </h4>
+			            </div>
+			            <div class="panel-collapse">
+			                <div class="panel-body">
+			                    <div class="panel-group">
 		                            <div id="model-status" class="panel">
-		                                    <div class="panel-body">
-		                                        <div class="task-progress">
-		                                            <div class="progress">
-		                                                {% set percentage = (100*0.5)|round|int %}
-		                                                <div class="progress-bar" style="width:{{percentage}}%">
-		                                                    {{percentage}}%
-		                                                </div>
+		                                <div class="panel-body">
+		                                    <div class="task-progress">
+		                                        <div class="progress">
+		                                            {% set percentage = (100*0.5)|round|int %}
+		                                            <div class="progress-bar" style="width:{{percentage}}%">
+		                                                {{percentage}}%
 		                                            </div>
-		                                            Estimated time remaining: <span class="task-eta">10 mins</span>
-		                                            <br />
-		                                            <br />
 		                                        </div>
-		    
+		                                        Estimated time remaining: <span class="task-eta">10 mins</span>
+		                                        <br />
+		                                        <br />
 		                                    </div>
+		                                    <div id="log"></div>
+		                                    <script type="text/javascript" charset="utf-8">
+		                                    	socket.on('my response', function(msg) {
+									                $('#log').append('<br>Received #' + msg.count + ': ' + msg.data);
+									            });
+		                                    </script>	    
 		                                </div>
 		                            </div>
-		                    </div>
-		                </div>
-		            </div>
-		        </div>
+		      	                </div>
+			                </div>
+			            </div>
+			        </div>
 		        </div>      
-		    </div>    
+		    </div>
+		</div>
     </div>
 </form>
 

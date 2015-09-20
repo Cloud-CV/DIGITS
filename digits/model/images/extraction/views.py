@@ -6,6 +6,9 @@ import tempfile
 import random
 import numpy as np
 import scipy.io
+from threading import Thread
+from flask.ext.socketio import SocketIO, emit, join_room, leave_room, \
+    close_room, disconnect
 
 import flask
 from flask import Response
@@ -106,6 +109,19 @@ def download_model(gist_location):
     else:
         return 0
 
+def background_thread():
+    """Example of how to send server generated events to clients."""
+    count = 0
+    while True:
+        time.sleep(10)
+        count += 1
+        socketio.emit('my response',
+                      {'data': 'Server generated event', 'count': count},
+                      namespace=NAMESPACE)
+
+# GLOBAL
+thread = None
+
 ######################################################################################
 
 @app.route(NAMESPACE + '.json', methods=['POST'])
@@ -184,7 +200,12 @@ def feature_extraction_model_create():
             
             model_gist_location = digits_cwd+'/pretrained_models/'+form.caffezoo_model.data
             ###########
-            # MOHIT 
+            # MOHIT
+            global thread
+            if thread is None:
+                thread = Thread(target=background_thread)
+                thread.start()
+
             fl = download_model(model_gist_location)
             if fl != 0:
                 if fl == 1:
