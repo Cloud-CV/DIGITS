@@ -313,11 +313,14 @@ def rank_models(dataset_job_id):
     if not models:
         raise werkzeug.exceptions.BadRequest('Select a model using the checkboxes to compare validation scores')
     
-    val_images_file = config_value('jobs_dir')+'/'+dataset_job_id+'/'+utils.constants.VAL_FILE
+    val_images_file = dataset.get_path()+'/'+utils.constants.VAL_FILE
+    
     val_images = []
+    relv_indx = []
     with open(val_images_file, 'r') as val_data:
-        for line in val_data.readlines():
+        for i , line in enumerate(val_data.readlines()):
             if (line.split()[1] in class_ids) or ('all' in class_ids):
+                relv_indx.append(i)
                 image = {'image': line.split()[0], 'label': line.split()[1]}
                 val_images.append(image)
     
@@ -361,13 +364,14 @@ def rank_models(dataset_job_id):
             labels, scores, visualizations = model.train_task().infer_many(images, snapshot_epoch=epoch)
 
         else:
-            print "[DEBUG] Loading stored validation data."
             validation_data = model.train_task().validation_data
             labels = validation_data['labels']
             scores = validation_data['scores']
-
+            
         # Taking only the Top-K results.
         indices = (-scores).argsort()[:, :top_k]
+        indices = indices[relv_indx,:]
+
         for image_index, index_list in enumerate(indices):
             top_k_labels = []
             for i in index_list:
@@ -375,9 +379,10 @@ def rank_models(dataset_job_id):
             
             if val_images[image_index]['label'] in top_k_labels:
                 model_score[idx]+=1
-       
+        
         models[idx]['score'] = round(float(model_score[idx]*100)/len(images),2)
-
+        print idx , "model score" , models[idx]['score']
+        
     models = sorted(models, key=lambda k: k['score'], reverse=True)
 
     return flask.render_template('datasets/images/classification/rank_models.html',
