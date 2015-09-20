@@ -89,6 +89,7 @@ class Scheduler:
         verbose -- if True, print more errors
         """
         self.jobs = []
+        self.workspace_jobs = {}
         self.verbose = verbose
 
         # Keeps track of resource usage
@@ -103,7 +104,11 @@ class Scheduler:
 
         self.running = False
         self.shutdown = gevent.event.Event()
-
+    def return_workspace_jobs(self , workspace):
+        if self.workspace_jobs.has_key(workspace):
+            return self.workspace_jobs[workspace]
+        else:
+            raise RuntimeError("Workpsace %s does not exist"%(workspace))
     def load_past_jobs(self):
         """
         Look in the jobs directory and load all valid jobs
@@ -111,6 +116,8 @@ class Scheduler:
         failed = 0
         loaded_jobs = []
         for work_space in sorted(os.listdir(config_value('jobs_dir'))):
+            if not self.workspace_jobs.has_key(work_space):
+                self.workspace_jobs[work_space] = []
             work_space_path = os.path.join(config_value('jobs_dir') , work_space)
             for dir_name in sorted(os.listdir(work_space_path)):
                 if os.path.isdir(os.path.join(work_space_path, dir_name)):
@@ -129,6 +136,8 @@ class Scheduler:
                                 job = Job.load(job_id)
                                 if not job:
                                     job = PretrainedJob.load(dir_name)
+                                self.workspace_jobs[work_space].append(job)
+
                             except Exception as e:
                                 print e
                                 #job = PretrainedJob.load(dir_name)
