@@ -54,7 +54,7 @@ class Job(StatusCls):
         """
         super(Job, self).__init__()
         self._id = '%s-%s' % (time.strftime('%Y%m%d-%H%M%S'), os.urandom(2).encode('hex'))
-        self._dir = os.path.join(config_value('jobs_dir'), str(workspace+"/"+self._id))
+        self._dir = os.path.join(config_value('jobs_dir'), workspace, self._id)
         self._name = name
         self.pickver_job = PICKLE_VERSION
         self.tasks = []
@@ -232,7 +232,6 @@ class PretrainedJob(StatusCls):
         self.pickver_job = PICKLE_VERSION
         self.tasks = []
         self.exception = None
-
         os.mkdir(self._dir)
 
 
