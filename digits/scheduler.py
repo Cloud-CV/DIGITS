@@ -115,14 +115,14 @@ class Scheduler:
         """
         failed = 0
         loaded_jobs = []
-        for work_space in sorted(os.listdir(config_value('jobs_dir'))):
-            if not self.workspace_jobs.has_key(work_space):
-                self.workspace_jobs[work_space] = []
-            work_space_path = os.path.join(config_value('jobs_dir') , work_space)
-            for dir_name in sorted(os.listdir(work_space_path)):
-                if os.path.isdir(os.path.join(work_space_path, dir_name)):
+        for workspace in sorted(os.listdir(config_value('jobs_dir'))):
+            if not self.workspace_jobs.has_key(workspace):
+                self.workspace_jobs[workspace] = []
+            workspace_path = os.path.join(config_value('jobs_dir') , workspace)
+            for dir_name in sorted(os.listdir(workspace_path)):
+                if os.path.isdir(os.path.join(workspace_path, dir_name)):
                     exists = False
-                    job_id = work_space+'/'+dir_name
+                    job_id = dir_name
                     # Make sure it hasn't already been loaded
                     for job in self.jobs:
                         if job.id() == job_id:
@@ -133,10 +133,10 @@ class Scheduler:
                         try:
                             try:
                                 # TODO : Suggest a better way of storing Jobs. So that we can know while loading itself what sort of a model are we looking at.
-                                job = Job.load(job_id)
+                                job = Job.load(job_id, workspace)
                                 if not job:
-                                    job = PretrainedJob.load(dir_name)
-                                self.workspace_jobs[work_space].append(job)
+                                    job = PretrainedJob.load(job_id, workspace)
+                                self.workspace_jobs[workspace].append(job)
 
                             except Exception as e:
                                 print e

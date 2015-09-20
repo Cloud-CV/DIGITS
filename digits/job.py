@@ -21,14 +21,14 @@ class Job(StatusCls):
     SAVE_FILE = 'status.pickle'
 
     @classmethod
-    def load(cls, job_id):
+    def load(cls, job_id, workspace):
         """
         Loads a Job in the given job_id
         Returns the Job or throws an exception
         """
         from digits.model.tasks import TrainTask, LoadModelTask
 
-        job_dir = os.path.join(config_value('jobs_dir'), job_id)
+        job_dir = os.path.join(config_value('jobs_dir'), workspace, job_id)
         filename = os.path.join(job_dir, cls.SAVE_FILE)
         with open(filename, 'rb') as savefile:
             job = pickle.load(savefile)
@@ -199,14 +199,14 @@ class PretrainedJob(StatusCls):
     SAVE_FILE = 'status.pickle'
 
     @classmethod
-    def load(cls, job_id):
+    def load(cls, job_id, workspace):
         """
         Loads a Job in the given job_id
         Returns the Job or throws an exception
         """
         from digits.model.tasks import LoadModelTask
 
-        job_dir = os.path.join(config_value('jobs_dir'), job_id)
+        job_dir = os.path.join(config_value('jobs_dir'), workspace, job_id)
         filename = os.path.join(job_dir, cls.SAVE_FILE)
         with open(filename, 'rb') as savefile:
             job = pickle.load(savefile)
