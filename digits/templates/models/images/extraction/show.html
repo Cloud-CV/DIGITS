@@ -253,7 +253,7 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                             <input type="text" id="top_n" name="top_n" class="form-control" placeholder="9">
                         </div>
                         <button name="top-n-btn"
-                            formaction="{{url_for('image_classification_model_top_n', job_id=job.id())}}?workspace={{ workspace }}"
+                            formaction="{{url_for('feature_extraction_model_top_n', job_id=job.id())}}?workspace={{ workspace }}"
                             formmethod="post"
                             formenctype="multipart/form-data"
                             formtarget="_blank"
@@ -274,7 +274,7 @@ function classifyOne() {
     // grab all form data
     var formData = new FormData($("#test-model-form")[0]);
 
-    $.ajax("{{url_for('image_classification_model_classify_one', job_id=job.id())}}?workspace={{ workspace }}",
+    $.ajax("{{url_for('feature_extraction_model_classify_one', job_id=job.id())}}?workspace={{ workspace }}",
     {
         type: "POST",
         data: formData,
@@ -300,7 +300,7 @@ function classifyMany() {
     // grab all form data
     var formData = new FormData($("#test-model-form")[0]);
 
-    $.ajax("{{url_for('image_classification_model_classify_many', job_id=job.id())}}?workspace={{ workspace }}",
+    $.ajax("{{url_for('feature_extraction_model_classify_many', job_id=job.id())}}?workspace={{ workspace }}",
             {
                 type: "POST",
                 data: formData,

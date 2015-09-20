@@ -227,7 +227,8 @@ def feature_extraction_model_classify_one():
     Returns JSON when requested: {predictions: {category: confidence,...}}
     """
     workspace = get_workspace(flask.request.url)
-    job = job_from_request()
+    job_id = flask.request.args['job_id'].split('?')[0]
+    job = scheduler.get_job(job_id)
 
     image = None
     if 'image_url' in flask.request.form and flask.request.form['image_url']:
@@ -337,7 +338,8 @@ def feature_extraction_model_classify_many():
     Returns JSON when requested: {classifications: {filename: [[category,confidence],...],...}}
     """
     workspace = get_workspace(flask.request.url)
-    job = job_from_request()
+    job_id = flask.request.args['job_id'].split('?')[0]
+    job = scheduler.get_job(job_id)
 
     image_list = flask.request.files['image_list']
     if not image_list:
@@ -476,12 +478,13 @@ def feature_extraction_model_classify_many():
 
 @app.route(NAMESPACE + '/top_n', methods=['POST'])
 @autodoc('models')
-def extraction_model_top_n():
+def feature_extraction_model_top_n():
     """
     Classify many images and show the top N images per category by confidence
     """
     workspace = get_workspace(flask.request.url)
-    job = job_from_request()
+    job_id = flask.request.args['job_id'].split('?')[0]
+    job = scheduler.get_job(job_id)
 
     image_list = flask.request.files.get['image_list']
     if not image_list:
