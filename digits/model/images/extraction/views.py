@@ -185,9 +185,10 @@ def show(job, *args):
     """
     import caffe
     
+    workspace = args[0]
     job_id = job.id()
-    model_file = './digits/jobs/'+job_id+'/snapshot_iter_1.caffemodel'
-    prototxt_file = './digits/jobs/'+job_id+'/deploy.prototxt'
+    model_file = './digits/jobs/'+workspace+'/'+job_id+'/snapshot_iter_1.caffemodel'
+    prototxt_file = './digits/jobs/'+workspace+'/'+job_id+'/deploy.prototxt'
 
     meta_data = {}
     try:
@@ -202,7 +203,6 @@ def show(job, *args):
         meta_data['InputDimensions'] = net.blobs['data'].data.shape
         meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
 
-    workspace = args[0]
     return flask.render_template('models/images/extraction/show.html', job=job, meta_data=meta_data, workspace = workspace)
 
 @app.route(NAMESPACE + '/large_graph', methods=['GET'])
