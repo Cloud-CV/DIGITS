@@ -43,6 +43,9 @@ class Job(StatusCls):
                     return None
             return job
 
+    def get_path(self):
+        return self._dir
+    
     def __init__(self, name, workspace):
         """
         Arguments:

@@ -89,6 +89,7 @@ class Scheduler:
         verbose -- if True, print more errors
         """
         self.jobs = []
+        self.workspace_jobs = {}
         self.verbose = verbose
 
         # Keeps track of resource usage
@@ -103,51 +104,61 @@ class Scheduler:
 
         self.running = False
         self.shutdown = gevent.event.Event()
-
+    def return_workspace_jobs(self , workspace):
+        if self.workspace_jobs.has_key(workspace):
+            return self.workspace_jobs[workspace]
+        else:
+            raise RuntimeError("Workpsace %s does not exist"%(workspace))
     def load_past_jobs(self):
         """
         Look in the jobs directory and load all valid jobs
         """
         failed = 0
         loaded_jobs = []
-        for dir_name in sorted(os.listdir(config_value('jobs_dir'))):
-            if os.path.isdir(os.path.join(config_value('jobs_dir'), dir_name)):
-                exists = False
-
-                # Make sure it hasn't already been loaded
-                for job in self.jobs:
-                    if job.id() == dir_name:
-                        exists = True
-                        break
-
-                if not exists:
-                    try:
+        for work_space in sorted(os.listdir(config_value('jobs_dir'))):
+            if not self.workspace_jobs.has_key(work_space):
+                self.workspace_jobs[work_space] = []
+            work_space_path = os.path.join(config_value('jobs_dir') , work_space)
+            for dir_name in sorted(os.listdir(work_space_path)):
+                if os.path.isdir(os.path.join(work_space_path, dir_name)):
+                    exists = False
+                    job_id = work_space+'/'+dir_name
+                    # Make sure it hasn't already been loaded
+                    for job in self.jobs:
+                        if job.id() == job_id:
+                            exists = True
+                            break
+    
+                    if not exists:
                         try:
-                            # TODO : Suggest a better way of storing Jobs. So that we can know while loading itself what sort of a model are we looking at.
-                            job = Job.load(dir_name)
-                            if not job:
-                                job = PretrainedJob.load(dir_name)
-                        except Exception as e:
-                            print e
-                            #job = PretrainedJob.load(dir_name)
-                        # The server might have crashed
-                        if job.status.is_running():
-                            job.status = Status.ABORT
-                        for task in job.tasks:
-                            if task.status.is_running():
-                                task.status = Status.ABORT
+                            try:
+                                # TODO : Suggest a better way of storing Jobs. So that we can know while loading itself what sort of a model are we looking at.
+                                job = Job.load(job_id)
+                                if not job:
+                                    job = PretrainedJob.load(dir_name)
+                                self.workspace_jobs[work_space].append(job)
 
-                        # We might have changed some attributes here or in __setstate__
-                        job.save()
-                        loaded_jobs.append(job)
-                    except Exception as e:
-                        failed += 1
-                        if self.verbose:
-                            if str(e):
-                                print 'Caught %s while loading job "%s":' % (type(e).__name__, dir_name)
-                                print '\t%s' % e
-                            else:
-                                print 'Caught %s while loading job "%s"' % (type(e).__name__, dir_name)
+                            except Exception as e:
+                                print e
+                                #job = PretrainedJob.load(dir_name)
+                            # The server might have crashed
+                            if job.status.is_running():
+                                job.status = Status.ABORT
+                            for task in job.tasks:
+                                if task.status.is_running():
+                                    task.status = Status.ABORT
+    
+                            # We might have changed some attributes here or in __setstate__
+                            job.save()
+                            loaded_jobs.append(job)
+                        except Exception as e:
+                            failed += 1
+                            if self.verbose:
+                                if str(e):
+                                    print 'Caught %s while loading job "%s":' % (type(e).__name__, dir_name)
+                                    print '\t%s' % e
+                                else:
+                                    print 'Caught %s while loading job "%s"' % (type(e).__name__, dir_name)
 
         # add DatasetJobs
         for job in loaded_jobs:
