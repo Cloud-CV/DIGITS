@@ -69,6 +69,7 @@ def feature_extraction_model_create():
     try:
         job = FeatureExtractionModelJob(
                 name = form.model_name.data,
+                workspace = workspace,
                 )
         network = caffe_pb2.NetParameter()
         pretrained_model = None
@@ -165,7 +166,6 @@ def feature_extraction_model_create():
                     channels        = None,
                     network         = network,
                     mean_file       = mean_file,
-                    workspace       = workspace,
                     )
                 )
 

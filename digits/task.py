@@ -188,7 +188,7 @@ class Task(StatusCls):
             return False
         # Convert them all to strings
         args = [str(x) for x in args]
-
+        print args
         self.logger.info('%s task started.' % self.name())
         self.status = Status.RUN
 

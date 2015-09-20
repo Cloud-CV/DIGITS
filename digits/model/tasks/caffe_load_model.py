@@ -38,7 +38,7 @@ class CaffeLoadModelTask(LoadModelTask):
         #TODO
         pass
 
-    def __init__(self, network, mean_file, workspace, **kwargs):
+    def __init__(self, network, mean_file, **kwargs):
         """
         Arguments:
         network -- a caffe NetParameter defining the network
@@ -56,7 +56,6 @@ class CaffeLoadModelTask(LoadModelTask):
         self.loaded_snapshot_epoch = None
         self.image_mean = mean_file
         self.solver = None
-        self.workspace = workspace
 
         self.solver_file = constants.CAFFE_SOLVER_FILE
         self.train_val_file = constants.CAFFE_TRAIN_VAL_FILE
@@ -335,7 +334,7 @@ class CaffeLoadModelTask(LoadModelTask):
             args.append('--weights=%s' % self.path(self.pretrained_model))
         """
         # Place the caffemodel as snapshot_iter_1.caffemodel file in te job directory.
-        args = ['cp', self.path(self.pretrained_model), self.workspace+'/'+self.path(self.job_dir)+'/snapshot_iter_1.caffemodel']
+        args = ['cp', self.path(self.pretrained_model), self.path(self.job_dir)+'/snapshot_iter_1.caffemodel']
         self.pretrained_model =  args[2]
         self.snapshots.append( (args[2],1) )
         return args
