@@ -42,11 +42,12 @@ def dataset_models_compare(dataset_job_id):
     """
     Compare models performance on the validation set of the dataset and return performance matrix.
     """
+    workspace = get_workspace(flask.request.url)
     dataset_job = scheduler.get_job(dataset_job_id)
     if dataset_job is None:
         raise werkzeug.exceptions.NotFound('Job not found')
 
-    return dataset_images.classification.views.models_compare(dataset_job)
+    return dataset_images.classification.views.models_compare(dataset_job, workspace)
 
 @app.route(NAMESPACE + 'summary', methods=['GET'])
 @autodoc('datasets')

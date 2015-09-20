@@ -271,11 +271,12 @@ def show(job, *args):
     workspace = args[0]
     return flask.render_template('datasets/images/classification/show.html', job=job, workspace = workspace)
 
-def models_compare(dataset_job):
+def models_compare(dataset_job, workspace):
     """
     Called from digits.dataset.views.dataset_models_compare()
     """
     from digits import model
+
     jobs = get_job_list(model.ModelJob, False)
 
     dataset_models = []
@@ -283,7 +284,7 @@ def models_compare(dataset_job):
         if job.dataset.id()==dataset_job.id():
             dataset_models.append(job)
    
-    return flask.render_template('datasets/images/classification/compare.html', job=dataset_job, dataset_models=dataset_models)
+    return flask.render_template('datasets/images/classification/compare.html', job=dataset_job, dataset_models=dataset_models, workspace=workspace)
 
 
 @app.route(NAMESPACE + '/rank/<dataset_job_id>', methods=['POST'])

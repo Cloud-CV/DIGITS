@@ -156,10 +156,10 @@ $('#evaluate-models').on('click', function(event) {
             'Select the models you want to compare on this dataset on the next page.',
             function(result) {
                 if (result)
-                    $.ajax("{{url_for('evaluate_models', job_id=job.id())}}",
+                    $.ajax("{{url_for('evaluate_models', job_id=job.id())}}?workspace={{ workspace }}",
                         {type: "GET"})
                     .done(function() {
-                        window.location = "{{url_for('dataset_models_compare', dataset_job_id=job.id())}}";
+                        window.location = "{{url_for('dataset_models_compare', dataset_job_id=job.id())}}?workspace={{ workspace }}";
                         })
                     .fail(function(data) { errorAlert(data); });
             });
