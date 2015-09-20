@@ -540,7 +540,7 @@ class CaffeTrainTask(TrainTask):
         dataset = self.dataset
 
         print "[AfterTrain] Caching validation data..."
-        val_images_file = config_value('jobs_dir')+'/'+dataset.id()+'/'+utils.constants.VAL_FILE
+        val_images_file = dataset.get_path()+'/'+utils.constants.VAL_FILE
         val_images = []
         with open(val_images_file, 'r') as val_data:
             for line in val_data.readlines():
