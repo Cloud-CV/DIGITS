@@ -165,6 +165,7 @@ def feature_extraction_model_create():
                     channels        = None,
                     network         = network,
                     mean_file       = mean_file,
+                    workspace       = workspace,
                     )
                 )
 
