@@ -123,6 +123,7 @@ class Scheduler:
                 if os.path.isdir(os.path.join(workspace_path, dir_name)):
                     exists = False
                     job_id = dir_name
+                    path_job = workspace+'/'+dir_name
                     # Make sure it hasn't already been loaded
                     for job in self.jobs:
                         if job.id() == job_id:
@@ -133,9 +134,9 @@ class Scheduler:
                         try:
                             try:
                                 # TODO : Suggest a better way of storing Jobs. So that we can know while loading itself what sort of a model are we looking at.
-                                job = Job.load(job_id, workspace)
+                                job = Job.load(path_job)
                                 if not job:
-                                    job = PretrainedJob.load(job_id, workspace)
+                                    job = PretrainedJob.load(path_job)
                                 self.workspace_jobs[workspace].append(job)
 
                             except Exception as e:
