@@ -26,6 +26,8 @@ from digits.decorators import login_required, access_required
 from urlparse import urlparse, parse_qs
 
 import base64
+from threading import Thread
+thread = None
 
 @app.route('/index.json', methods=['GET'])
 @app.route('/', methods=['GET'])
@@ -44,10 +46,12 @@ def home():
         }
     """
     workspace = get_workspace_details(flask.request.url)
+    # thread = Thread(target=get_download_status, args =(socketio,))
+    # thread.start()
     running_datasets    = get_job_list(dataset.DatasetJob, True, workspace['workspace_id'])
     completed_datasets  = get_job_list(dataset.DatasetJob, False, workspace['workspace_id'])
     running_models      = get_job_list(model.ModelJob, True, workspace['workspace_id'])
-    completed_models    = get_job_list(model.ModelJob, False, workspace['workspace_id'])
+    completed_models    = list(set(get_job_list(model.ModelJob, False, workspace['workspace_id'])))
 
     if request_wants_json():
         return flask.jsonify({
@@ -85,7 +89,6 @@ def home():
                         },
                     ])
                 ]
-
         return flask.render_template('home.html',
                 new_dataset_options = new_dataset_options,
                 running_datasets    = running_datasets,
