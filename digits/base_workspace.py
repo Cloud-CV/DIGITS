@@ -3,7 +3,7 @@ from digitsdb.models import Job as WorkspaceJob
 from organizations.models import OrganizationUser, Organization
 from urlparse import urlparse, parse_qs
 from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY, load_backend
-
+from digitsdb.views import get_download_status
 import base64
 
 def get_workspace_details(url):
