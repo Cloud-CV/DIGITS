@@ -197,10 +197,17 @@ def show(job, *args):
     except:
         # wait for the model to be loaded onto memory.
         import time
-        time.sleep(2)
-        net = caffe.Net(prototxt_file, model_file, caffe.TEST)
-        meta_data['InputDimensions'] = net.blobs['data'].data.shape
-        meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
+        loaded = 0
+        while not loaded:
+            time.sleep(2)
+            try:
+                net = caffe.Net(prototxt_file, model_file, caffe.TEST)
+                meta_data['InputDimensions'] = net.blobs['data'].data.shape
+                meta_data['#Categories'] = net.blobs['prob'].data.shape[1]
+                print "[LoadModel] Model succesfully copied to DIGITS"
+                loaded = 1
+            except:
+                print "[LoadModel] Waiting for the model to be copied in DIGITS..."
 
     return flask.render_template('models/images/extraction/show.html', job=job, meta_data=meta_data, workspace = workspace)
 
