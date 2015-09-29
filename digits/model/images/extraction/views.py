@@ -7,6 +7,7 @@ import random
 import numpy as np
 import scipy.io
 
+import subprocess
 import flask
 from flask import Response
 import werkzeug.exceptions
@@ -74,23 +75,21 @@ def feature_extraction_model_create():
         network = caffe_pb2.NetParameter()
         pretrained_model = None
 
-        digits_cwd = os.getcwd()
+        caffe_home = '/'.join(config_value('caffe_root')['executable'].split('/')[:-3])
        
         if form.gist_id.data:
             gist_id = form.gist_id.data
-            import subprocess
 
-            # Stores the gist in DIGITS_HOME/pretrained_models/gist_id/gist_id_master folder.
-            command = digits_cwd+'/scripts/download_model_from_gist.sh '+gist_id
+            command = os.path.join(caffe_home,'scripts/download_model_from_gist.sh')+' '+gist_id
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
             process.wait()
             for line in process.stdout:
                 print line,
             print "Gist successfully downloaded"
 
-            gist_location = digits_cwd+'/pretrained_models/'+gist_id+'/'+gist_id+'-master'
+            gist_location = os.path.join(caffe_home,'models',gist_id)
             # Now download the .caffemodel file from the gist readme.
-            command= digits_cwd+'/scripts/download_model_binary.py '+gist_location
+            command= os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
             process.wait()
             for line in process.stdout:
@@ -102,16 +101,16 @@ def feature_extraction_model_create():
             
             for filename in os.listdir(gist_location):
                 if filename.endswith('.caffemodel'):
-                    pretrained_model = str(gist_location+'/'+filename).strip()
+                    pretrained_model = os.path.join(gist_location,filename).strip()
 
             if not pretrained_model:
                 raise werkzeug.exceptions.BadRequest('Failed to download caffemodel from gist! : %s' % gist_id)
         
         elif form.caffezoo_model.data:
-            import subprocess
             
-            model_gist_location = digits_cwd+'/pretrained_models/'+form.caffezoo_model.data
-            command = digits_cwd+'/scripts/download_model_binary.py '+model_gist_location
+            #model_gist_location = digits_cwd+'/pretrained_models/'+form.caffezoo_model.data
+            model_gist_location = os.path.join(caffe_home,'models',form.caffezoo_model.data)
+            command = os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+model_gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
             process.wait()
             for line in process.stdout:
@@ -120,13 +119,12 @@ def feature_extraction_model_create():
                 print "Caffe model successfully loaded from the caffe zoo."
             else:
                 raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file from zoo.')
-            
             for filename in os.listdir(model_gist_location):
                 if filename.endswith('.caffemodel'):
-                    pretrained_model = str(model_gist_location+'/'+filename).strip()
+                    pretrained_model = os.path.join(model_gist_location,filename).strip()
 
             try:
-                with open(model_gist_location+'/deploy.prototxt', 'r') as deploy_file:
+                with open(os.path.join(model_gist_location,'deploy.prototxt'), 'r') as deploy_file:
                     deploy_content = deploy_file.read()
             except:
                raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist in : %s' % model_gist_location) 
