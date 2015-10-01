@@ -91,6 +91,13 @@ def feature_extraction_model_create():
             # Now download the .caffemodel file from the gist readme.
             command= os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+
+            ret_flag = emit_progress(process, gist_location)
+            if ret_flag == 1:
+                raise werkzeug.exceptions.BadRequest('Failed to download the model binary!')
+            elif ret_flag == 2:
+                print "[ModelDownload] : Model already exists and checks out."
+            
             process.wait()
             for line in process.stdout:
                 print line,
@@ -117,15 +124,8 @@ def feature_extraction_model_create():
                 raise werkzeug.exceptions.BadRequest('Failed to download the model binary!')
             elif ret_flag == 2:
                 print "[ModelDownload] : Model already exists and checks out."
-            #while process.poll() is None:
-            #    for line in iter(process.stdout.readline, b''):
-            #        if line is not None:
-            #            print "PROGRESS :",line.strip(), ":END"
-            #        else:
-            #            time.sleep(0.05)
+            
             process.wait()
-            for line in process.stdout:
-                print line,
             if not process.returncode == 1:
                 print "Caffe model successfully loaded from the caffe zoo."
             else:
