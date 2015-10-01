@@ -108,10 +108,21 @@ def feature_extraction_model_create():
         
         elif form.caffezoo_model.data:
             
-            #model_gist_location = digits_cwd+'/pretrained_models/'+form.caffezoo_model.data
             model_gist_location = os.path.join(caffe_home,'models',form.caffezoo_model.data)
             command = os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+model_gist_location
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=caffe_home)
+
+            ret_flag = emit_progress(process, model_gist_location)
+            if ret_flag == 1:
+                raise werkzeug.exceptions.BadRequest('Failed to download the model binary!')
+            elif ret_flag == 2:
+                print "[ModelDownload] : Model already exists and checks out."
+            #while process.poll() is None:
+            #    for line in iter(process.stdout.readline, b''):
+            #        if line is not None:
+            #            print "PROGRESS :",line.strip(), ":END"
+            #        else:
+            #            time.sleep(0.05)
             process.wait()
             for line in process.stdout:
                 print line,
@@ -177,6 +188,42 @@ def feature_extraction_model_create():
         if job:
             scheduler.delete_job(job)
         raise
+
+def emit_progress(process, gist_folder):
+    """
+    Compute and display the %completion of pretrianed model downloads.
+    """
+    import yaml, urllib2, hashlib
+
+    readme_filename = os.path.join(gist_folder, 'readme.md')
+    with open(readme_filename) as f:
+        lines = [line.strip() for line in f.readlines()]
+    top = lines.index('---')
+    bottom = lines[top + 1:].index('---')
+    frontmatter = yaml.load('\n'.join(lines[top + 1:bottom]))
+    model_filename = os.path.join(gist_folder, frontmatter['caffemodel'])
+
+    def model_checks_out(filename=model_filename, sha1=frontmatter['sha1']):
+        with open(filename, 'r') as f:
+            return hashlib.sha1(f.read()).hexdigest() == sha1
+    
+    # Model already exists.
+    if os.path.exists(model_filename) and model_checks_out():
+        return 2
+    
+    model = urllib2.urlopen(frontmatter['caffemodel_url'])
+    total_size = float(model.info().getheaders("Content-Length")[0])
+
+    downloaded = 0.0
+    percentage = (downloaded*100.0)/total_size
+    while process.poll() is None:
+        command = 'ls -l '+gist_folder+' | grep '+model_filename.split('/')[-1]
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        out, err = p.communicate()
+        downloaded = float(out.split()[4])
+        percentage = (downloaded*100.0)/total_size
+        print (percentage,downloaded,total_size)
+    return 0
 
 def show(job, *args):
     """
