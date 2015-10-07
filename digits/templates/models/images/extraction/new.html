@@ -17,6 +17,11 @@ Loading Pretrained CaffeModel
     <h1>Loading Pretrained Model</h1>
 </div>
 
+<div style="width:30%; float:right">
+{% include 'models/progress_bar.html' %}
+</div>
+
+<div style="width:70%; float:left">
 <form id="model-form" action="{{url_for('feature_extraction_model_create')}}?workspace={{ workspace }}" enctype="multipart/form-data" method="post">
     {{ form.hidden_tag() }}
 
@@ -167,7 +172,7 @@ Loading Pretrained CaffeModel
 
 		                </div>
 		            </div>
-		            <input type="submit" name="create-model" class="btn btn-primary" value="Create">
+		            <input type="submit" name="create-model" class="btn btn-primary" value="Load Model">
 		        </div>
             </div>
             {{ form.method(style="display:none;") }}
@@ -186,5 +191,5 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
     </div>
 
 </form>
-
+</div>
 {% endblock %}

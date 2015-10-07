@@ -92,7 +92,7 @@ def feature_extraction_model_create():
             command= os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
 
-            ret_flag = emit_progress(process, gist_location)
+            ret_flag = emit_progress(process, gist_location, job.id())
             if ret_flag == 1:
                 raise werkzeug.exceptions.BadRequest('Failed to download the model binary!')
             elif ret_flag == 2:
@@ -119,7 +119,7 @@ def feature_extraction_model_create():
             command = os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+model_gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=caffe_home)
 
-            ret_flag = emit_progress(process, model_gist_location)
+            ret_flag = emit_progress(process, model_gist_location, job.id())
             if ret_flag == 1:
                 raise werkzeug.exceptions.BadRequest('Failed to download the model binary!')
             elif ret_flag == 2:
@@ -189,11 +189,15 @@ def feature_extraction_model_create():
             scheduler.delete_job(job)
         raise
 
-def emit_progress(process, gist_folder):
+# Global Variable
+thread = None
+
+def emit_progress(process, gist_folder, job_id):
     """
     Compute and display the %completion of pretrianed model downloads.
     """
     import yaml, urllib2, hashlib
+    from threading import Thread
 
     readme_filename = os.path.join(gist_folder, 'readme.md')
     with open(readme_filename) as f:
@@ -214,16 +218,36 @@ def emit_progress(process, gist_folder):
     model = urllib2.urlopen(frontmatter['caffemodel_url'])
     total_size = float(model.info().getheaders("Content-Length")[0])
 
+    global thread
+    if thread is None:
+        thread = Thread(target=update_progress_bar, args=(process, model_filename.split('/')[-1], total_size, gist_folder, job_id))
+        thread.start()
+    #thread.start_new_thread(update_progress_bar, (process, model_filename.split('/')[-1], total_size, gist_folder, job_id))
+
+    return 0
+
+def update_progress_bar(process, model_filename, total_size, gist_folder, job_id):
+    """
+    Asynchronous communication between the html render and backend progress.
+    """
+    import time
+    from digits.webapp import socketio
+
     downloaded = 0.0
     percentage = (downloaded*100.0)/total_size
     while process.poll() is None:
-        command = 'ls -l '+gist_folder+' | grep '+model_filename.split('/')[-1]
+        command = 'ls -l '+gist_folder+' | grep '+model_filename
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         out, err = p.communicate()
+        print out
         downloaded = float(out.split()[4])
         percentage = (downloaded*100.0)/total_size
-        print (percentage,downloaded,total_size)
-    return 0
+        socketio.emit('my response',
+                        {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'},
+                        namespace='/jobs',
+                        )
+        print {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'}
+    return
 
 def show(job, *args):
     """

@@ -1,0 +1,31 @@
+<!-- HTML rendered to show progress bar -->
+{% with namespace = "/home" %}
+    {% include "socketio.html" %}
+{% endwith %}
+
+<div class="row">
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            console.log('Hello there');
+            socket.on('my response', function(msg) {
+                console.log('Hello there again');
+                //$('#log').append('<br>Received #' + msg.percentage + ': ' + msg.downloaded);
+                console.log(msg);
+            });
+        });
+    </script>
+    <h3 style="text-align:center">{{ filename }}</h3>
+        <div class="col-sm-6">
+            <!-- Code for progress bar here -->
+            <div id="log"></div>
+            <p> hey there!</p>
+            <div class="task-progress">
+                <div class="progress">
+                    {% set percentage = 50 %}
+                    <div class="progress-bar" style="width:{{percentage}}%">
+                        {{percentage}}%
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
