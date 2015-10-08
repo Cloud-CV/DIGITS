@@ -23,7 +23,7 @@ import digits
 from digits.config import config_value
 from digits import utils
 from digits.utils.routing import request_wants_json, job_from_request
-from digits.webapp import app, scheduler, autodoc
+from digits.webapp import app, scheduler, autodoc, socketio
 from digits.model import tasks
 from forms import PretrainedFeatureExtractionModelForm
 from job import FeatureExtractionModelJob
@@ -220,33 +220,32 @@ def emit_progress(process, gist_folder, job_id):
 
     global thread
     if thread is None:
-        thread = Thread(target=update_progress_bar, args=(process, model_filename.split('/')[-1], total_size, gist_folder, job_id))
+        thread = Thread(target=update_progress_bar, args=(process, model_filename.split('/')[-1], total_size, gist_folder, job_id, socketio))
         thread.start()
     #thread.start_new_thread(update_progress_bar, (process, model_filename.split('/')[-1], total_size, gist_folder, job_id))
 
     return 0
 
-def update_progress_bar(process, model_filename, total_size, gist_folder, job_id):
+def update_progress_bar(process, model_filename, total_size, gist_folder, job_id, socketio):
     """
     Asynchronous communication between the html render and backend progress.
     """
     import time
-    from digits.webapp import socketio
 
     downloaded = 0.0
     percentage = (downloaded*100.0)/total_size
+    print socketio
     while process.poll() is None:
         command = 'ls -l '+gist_folder+' | grep '+model_filename
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         out, err = p.communicate()
-        print out
         downloaded = float(out.split()[4])
         percentage = (downloaded*100.0)/total_size
         socketio.emit('my response',
                         {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'},
-                        namespace='/jobs',
+                        namespace='/home',
                         )
-        print {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'}
+        #print {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'}
     return
 
 def show(job, *args):

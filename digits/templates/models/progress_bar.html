@@ -7,6 +7,7 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function(){
             console.log('Hello there');
+            console.log(socket);
             socket.on('my response', function(msg) {
                 console.log('Hello there again');
                 //$('#log').append('<br>Received #' + msg.percentage + ': ' + msg.downloaded);
