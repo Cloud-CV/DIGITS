@@ -31,3 +31,4 @@ def get_user_from_session(session_key):
 		if user:
 			return user
 	return AnonymousUser()
+

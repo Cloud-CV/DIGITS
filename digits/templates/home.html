@@ -8,10 +8,20 @@
     {% with namespace = "/home" %}
         {% include "socketio.html" %}
     {% endwith %}
+<script>
+
+        console.log("inside the document ready function");
+            // namespace = '/home'; // change to an empty string to use the global namespace
+            // var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            console.log(socket);
+            socket.on('progressbar', function(message){
+                console.log(message);
+            });
+ </script>
 {% endblock %}
 
 {% block content %}
-<script>
+ <script>
 function deleteJob(job_id) {
     bootbox.confirm(
             'Are you sure you want to delete this job?<br><br>All related files will be permanently removed.',

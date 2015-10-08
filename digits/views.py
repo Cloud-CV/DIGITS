@@ -46,8 +46,8 @@ def home():
         }
     """
     workspace = get_workspace_details(flask.request.url)
-    # thread = Thread(target=get_download_status, args =(socketio,))
-    # thread.start()
+    thread = Thread(target=get_download_status, args =(socketio,))
+    thread.start()
     running_datasets    = get_job_list(dataset.DatasetJob, True, workspace['workspace_id'])
     completed_datasets  = get_job_list(dataset.DatasetJob, False, workspace['workspace_id'])
     running_models      = get_job_list(model.ModelJob, True, workspace['workspace_id'])
