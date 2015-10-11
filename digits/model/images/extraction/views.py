@@ -32,8 +32,17 @@ from digits.workspaces import get_workspace
 
 NAMESPACE   = '/models/images/extraction'
 
-@app.route(NAMESPACE + '/new', methods=['GET'])
+# @app.route(NAMESPACE + '/update_progress_bar', methods=['GET'])
+# def post_model_download():
+#     for filename in os.listdir(model_gist_location):
+#         if filename.endswith('.caffemodel'):
+#             pretrained_model = os.path.join(model_gist_location,filename).strip()
+
+#     if not pretrained_model or not deploy_content:
+#         raise werkzeug.exceptions.BadRequest('Model not Found : %s' % form.caffezoo_model.data)
+            
 @autodoc('models')
+@app.route(NAMESPACE + '/new', methods=['GET'])
 def feature_extraction_model_new():
     """
     Return a form for a new FeatureExtractionModelJob for feature extraction.
@@ -88,6 +97,19 @@ def feature_extraction_model_create():
             print "Gist successfully downloaded"
 
             gist_location = os.path.join(caffe_home,'models',gist_id)
+
+            try:
+                with open(form.custom_network.data, 'r') as deploy_file:
+                    deploy_content = deploy_file.read()
+                    text_format.Merge(deploy_content, network)
+            except:
+                raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist : %s' % form.custom_network.data)
+            
+            if form.mean_file.data:
+            	mean_file = form.mean_file.data
+            else:
+            	mean_file = None
+
             # Now download the .caffemodel file from the gist readme.
             command= os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
@@ -98,9 +120,8 @@ def feature_extraction_model_create():
             elif ret_flag == 2:
                 print "[ModelDownload] : Model already exists and checks out."
             
-            process.wait()
-            for line in process.stdout:
-                print line,
+            """
+            process.wait()           
             if not process.returncode == 1:
                 print "Caffe model successfully downloaded from the caffe zoo."
             else:
@@ -112,10 +133,22 @@ def feature_extraction_model_create():
 
             if not pretrained_model:
                 raise werkzeug.exceptions.BadRequest('Failed to download caffemodel from gist! : %s' % gist_id)
-        
+        	"""
         elif form.caffezoo_model.data:
             
             model_gist_location = os.path.join(caffe_home,'models',form.caffezoo_model.data)
+            try:
+                with open(os.path.join(model_gist_location,'deploy.prototxt'), 'r') as deploy_file:
+                    deploy_content = deploy_file.read()
+                    text_format.Merge(deploy_content, network)
+            except:
+                raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist in : %s' % model_gist_location)
+            
+            if form.mean_file.data:
+            	mean_file = form.mean_file.data
+            else:
+            	mean_file = None 
+
             command = os.path.join(caffe_home,'scripts/download_model_binary.py')+' '+model_gist_location
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=caffe_home)
 
@@ -125,48 +158,59 @@ def feature_extraction_model_create():
             elif ret_flag == 2:
                 print "[ModelDownload] : Model already exists and checks out."
             
+            """
             process.wait()
             if not process.returncode == 1:
                 print "Caffe model successfully loaded from the caffe zoo."
             else:
                 raise werkzeug.exceptions.BadRequest('Failed to download caffemodel binary file from zoo.')
+            
             for filename in os.listdir(model_gist_location):
                 if filename.endswith('.caffemodel'):
                     pretrained_model = os.path.join(model_gist_location,filename).strip()
 
-            try:
-                with open(os.path.join(model_gist_location,'deploy.prototxt'), 'r') as deploy_file:
-                    deploy_content = deploy_file.read()
-            except:
-               raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist in : %s' % model_gist_location) 
-
             if not pretrained_model or not deploy_content:
                 raise werkzeug.exceptions.BadRequest('Model not Found : %s' % form.caffezoo_model.data)
+            """
 
+        # Loading pretrained model from file.    
         else:
+            print "else me aya"
             try:
                 pretrained_model = form.custom_network_snapshot.data.strip()
             except:
                 raise werkzeug.exceptions.BadRequest('File does not exist : %s' % form.custom_network_snapshot.data.strip())
-        
-        if not form.caffezoo_model.data:
             try:
                 with open(form.custom_network.data, 'r') as deploy_file:
                     deploy_content = deploy_file.read()
+                    text_format.Merge(deploy_content, network)
             except:
                 raise werkzeug.exceptions.BadRequest('deploy.prototxt file does not exist : %s' % form.custom_network.data)
+            
+            if form.mean_file.data:
+            	mean_file = form.mean_file.data
+            else:
+            	mean_file = None
 
-        if form.method.data == 'custom':
-            text_format.Merge(deploy_content, network)
-        else:
-            raise werkzeug.exceptions.BadRequest(
-                    'Unrecognized method: "%s"' % form.method.data)
-        
-        if form.mean_file.data:
-            mean_file = form.mean_file.data
-        else:
-            mean_file = None
+            print "before job append"
+            job.tasks.append(
+                tasks.CaffeLoadModelTask(
+                    job_dir         = job.dir(),
+                    pretrained_model= pretrained_model,
+                    crop_size       = None,
+                    channels        = None,
+                    network         = network,
+                    mean_file       = mean_file,
+                    )
+                )
 
+            scheduler.add_job(job)
+            if request_wants_json():
+                return flask.jsonify(job.json_dict())
+            else:
+                return flask.redirect(flask.url_for('models_show', job_id=job.id())+'?workspace='+workspace)
+
+        """
         job.tasks.append(
                 tasks.CaffeLoadModelTask(
                     job_dir         = job.dir(),
@@ -183,7 +227,8 @@ def feature_extraction_model_create():
             return flask.jsonify(job.json_dict())
         else:
             return flask.redirect(flask.url_for('models_show', job_id=job.id())+'?workspace='+workspace)
-
+        """
+        return "done"
     except:
         if job:
             scheduler.delete_job(job)
@@ -234,18 +279,18 @@ def update_progress_bar(process, model_filename, total_size, gist_folder, job_id
 
     downloaded = 0.0
     percentage = (downloaded*100.0)/total_size
-    print socketio
     while process.poll() is None:
-        command = 'ls -l '+gist_folder+' | grep '+model_filename
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        out, err = p.communicate()
-        downloaded = float(out.split()[4])
-        percentage = (downloaded*100.0)/total_size
-        socketio.emit('my response',
+        try:
+            downloaded = os.path.getsize(os.path.join(gist_folder, model_filename))
+        except:
+            downloaded = 0.0
+        percentage = round((downloaded*100.0)/total_size,2)
+        socketio.emit('progress_update',
                         {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'},
                         namespace='/home',
                         )
-        #print {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'}
+        print {'update': 'progress', 'percentage': percentage, 'eta':'not fixed'}
+        time.sleep(1)
     return
 
 def show(job, *args):

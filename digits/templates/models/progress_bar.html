@@ -6,25 +6,27 @@
 <div class="row">
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function(){
-            console.log('Hello there');
-            console.log(socket);
-            socket.on('my response', function(msg) {
-                console.log('Hello there again');
-                //$('#log').append('<br>Received #' + msg.percentage + ': ' + msg.downloaded);
-                console.log(msg);
+            socket.on('progress_update', function(msg) {
+                // console.log('Hello there again');
+                //$('#log').html('<br>Received #' + msg.percentage);
+                // console.log(msg);
+                if (msg['update'] == 'progress') {
+                    $("#task-progress .progress .progress-bar").width(msg['percentage'] + '%');
+                    $("#task-progress .progress .progress-bar").html(msg['percentage'] + '%');
+                }
             });
         });
     </script>
     <h3 style="text-align:center">{{ filename }}</h3>
-        <div class="col-sm-6">
+        <div id='progress-container' class="col-sm-6">
             <!-- Code for progress bar here -->
-            <div id="log"></div>
-            <p> hey there!</p>
-            <div class="task-progress">
-                <div class="progress">
-                    {% set percentage = 50 %}
-                    <div class="progress-bar" style="width:{{percentage}}%">
-                        {{percentage}}%
+            <!-- <div id="log">Was this here</div> -->
+            <h5>Download Status</h5>
+            <div id='task-progress' class="task-progress" >
+                <div id='progress' class="progress">
+                    <!-- {% set percentage = 0 %} -->
+                    <div id='progress-bar' class="progress-bar" style="width:0%">
+                        0%
                     </div>
                 </div>
             </div>

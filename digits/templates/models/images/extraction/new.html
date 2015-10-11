@@ -76,9 +76,7 @@ Loading Pretrained CaffeModel
                             </p>
                         </div>
                         <a href=# onClick="bootbox.alert($('#custom_network_explanation').html()); return false;"><span class="glyphicon glyphicon-question-sign"></span></a>
-                        <div class="pull-right">
-                            <a href=# class="btn btn-info" onClick="return visualizeNetwork();">Visualize</a>
-                        </div>
+                       
                         {{form.custom_network(class='form-control', rows=10)}}
                     </div>
                     <div class="form-group{{' has-error' if form.custom_network_snapshot.errors}}">
@@ -191,5 +189,24 @@ $('#network-tabs a[href="#network-tab-custom"]').tab('show');
     </div>
 
 </form>
+<script>
+  $(document).ready(function () {
+        $('#model-form').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url : $(this).attr('action') || window.location.pathname,
+                type: "post",
+                data: $(this).serialize(),
+                success: function (data) {
+                console.log(data);
+            },
+            error: function (jXHR, textStatus, errorThrown) {
+              alert(errorThrown);
+            }
+        });
+    });
+  });
+  </script>
+
 </div>
 {% endblock %}

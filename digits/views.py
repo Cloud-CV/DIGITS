@@ -331,20 +331,20 @@ def on_leave():
         #print '>>> Somebody left room %s' % room
         leave_room(room)
 
-# Progress Bar 
-@socketio.on('connect', namespace='/home')
-def on_connect():
-    """
-    Somebody connected to the progressbar page
-    """
-    print "Download progress reporting started"
+# # Progress Bar 
+# @socketio.on('connect', namespace='/progress')
+# def on_connect():
+#     """
+#     Somebody connected to the progressbar page
+#     """
+#     print "Download progress reporting started"
 
-@socketio.on('disconnect', namespace='/home')
-def on_disconnect():
-    """
-    Somebody connected to the progressbar page
-    """
-    print "Download progress reporting stopped"
+# @socketio.on('disconnect', namespace='/progress')
+# def on_disconnect():
+#     """
+#     Somebody connected to the progressbar page
+#     """
+#     print "Download progress reporting stopped"
 
 @app.route('/workspaces', methods=['GET'])
 def show_workspaces():
