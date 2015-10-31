@@ -43,7 +43,7 @@ class Job(StatusCls):
                     task.detect_snapshots()
             return job
 
-    def __init__(self, name):
+    def __init__(self, name, workspace):
         """
         Arguments:
         name -- name of this job
@@ -52,7 +52,7 @@ class Job(StatusCls):
 
         # create a unique ID
         self._id = '%s-%s' % (time.strftime('%Y%m%d-%H%M%S'), os.urandom(2).encode('hex'))
-        self._dir = os.path.join(config_value('jobs_dir'), self._id)
+        self._dir = os.path.join(config_value('jobs_dir'), str(workspace+"/"+self._id))
         self._name = name
         self.pickver_job = PICKLE_VERSION
         self.tasks = []
