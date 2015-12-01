@@ -174,7 +174,7 @@ class Scheduler:
         for job in loaded_jobs:
             if isinstance(job, DatasetJob):
                 self.jobs.append(job)
-       
+
         # add ModelJobs
         for job in loaded_jobs:
             if isinstance(job, ModelJob):
