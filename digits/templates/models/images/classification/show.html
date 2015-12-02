@@ -16,11 +16,11 @@
                 <dd>{{job.disk_size_fmt()}}</dd>
                 {% for key,value in task.get_model_files().items() %}
                 <dt>{{key}}</dt>
-                <dd><a href="{{url_for('serve_file', path=task.path(value, relative=True))}}?workspace={{ workspace }}">{{value}}</a></dd>
+                <dd><a href="{{url_for('serve_file', path=task.path(value, relative=True))}}">{{value}}</a></dd>
                 {% endfor %}
 
                 <dt>Raw {{task.get_framework_id()}} output</dt>
-                <dd><a href="{{url_for('serve_file', path=task.path(task.log_file, relative=True))}}?workspace={{ workspace }}">{{task.log_file}}</a></dd>
+                <dd><a href="{{url_for('serve_file', path=task.path(task.log_file, relative=True))}}">{{task.log_file}}</a></dd>
 
                 {% if task.pretrained_model %}
                 <dt>Pretrained Model</dt>
@@ -127,7 +127,7 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                     </div>
                     <div class="col-sm-4">
                         <button
-                            formaction="{{url_for('models_download', job_id=job.id())}}?workspace={{ workspace }}"
+                            formaction="{{url_for('models_download', job_id=job.id())}}"
                             formmethod="post"
                             formenctype="multipart/form-data"
                             class="btn btn-info">
@@ -163,6 +163,41 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                                 title="For each layer in the network, show statistics for the weights/activations and attempt to represent the data visually. Can delay classification considerably."
                                 ></span>
                         </div>
+                        <div class="form-group">
+                            <label for="save_type" class="control-label">Store data as :</label>
+                            <span name="save_type_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Select option to store data as NumPy array or .mat file"
+                                ></span>
+                                <br/>
+                            <label for="save_type_mat">
+                                <input id="save_type_mat" name="save_type_mat" type="radio" value="mat">
+                                .mat (MATLAB)
+                            </label>
+                            <label for="save_type_numpy">
+                                <input id="save_type_numpy" name="save_type_numpy" type="radio" value="numpy">
+                                .npy (NumPy)
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="save_vis_file_location" class="control-label">Specify path to store file</label>
+                            <span name="save_vis_file_location_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Provide path to location where you want to store the file of visualization data."
+                                ></span>
+                            <input id="save_vis_file_location" name="save_vis_file_location" type="text" value="/home/mohit/Downloads" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="select_visualization_layer" class="control-label">Specify Layer to Visualize</label>
+                            <span name="show_visualizations_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Specify name of the layer to obtain visualizations for that layer or comma seperated values for multiple layers. Provide 'all' to visualize all layers."
+                                ></span>
+                            <input id="select_visualization_layer" name="select_visualization_layer" type="text" value="all" class="form-control">
+                        </div>                        
                         <button name="classify-one-btn"
                             formaction="{{url_for('image_classification_model_classify_one', job_id=job.id())}}"
                             formmethod="post"
@@ -179,8 +214,54 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                             <input type="file" id="image_list" name="image_list" class="form-control">
                             <small>Accepts a list of filenames or urls (you can use your val.txt file)</small>
                         </div>
+                        <div class="form-group">
+                            <label for="save_visualizations">
+                                <input id="save_visualizations" name="save_visualizations" type="checkbox" value="y">
+                                Save visualizations and statistics
+                            </label>
+                            <span name="save_visualizations_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="For every image and for each layer in the network, save statistics for the weights/activations and attempt to represent the data visually. Can delay classification considerably."
+                                ></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="save_type_batch" class="control-label">Store data as :</label>
+                            <span name="save_type_batch_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Select option to store data as NumPy array or .mat file"
+                                ></span>
+                                <br/>
+                            <label for="save_type_mat_bulk">
+                                <input id="save_type_mat_bulk" name="save_type_mat_bulk" type="radio" value="mat">
+                                .mat (MATLAB)
+                            </label>
+                            <label for="save_type_numpy_bulk">
+                                <input id="save_type_numpy_bulk" name="save_type_numpy_bulk" type="radio" value="numpy">
+                                .npy (NumPy)
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="save_vis_file_location_bulk" class="control-label">Specify path to store file</label>
+                            <span name="save_vis_file_location_bulk_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Provide path to location where you want to store the file of visualization data."
+                                ></span>
+                            <input id="save_vis_file_location_bulk" name="save_vis_file_location_bulk" type="text" value="/home/mohit/Downloads" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="select_visualization_layer_bulk" class="control-label">Specify Layer to Visualize</label>
+                            <span name="select_visualizations_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Specify name of the layer to obtain visualizations for that layer. Provide 'all' to visualize all layers."
+                                ></span>
+                            <input id="select_visualization_layer_bulk" name="select_visualization_layer_bulk" type="text" value="all" class="form-control">
+                        </div>
                         <button name="classify-many-btn"
-                            formaction="{{url_for('image_classification_model_classify_many', job_id=job.id())}}{{ workspace }}"
+                            formaction="{{url_for('image_classification_model_classify_many', job_id=job.id())}}"
                             formmethod="post"
                             formenctype="multipart/form-data"
                             formtarget="_blank"
@@ -192,6 +273,7 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                             data-container="body"
                             title="Classify a list of images and show the top 5 category predictions for each."
                             ></span>
+                        <hr/>
                         <div class="form-group">
                             <label for="num_test_images" class="control-label">Number of images use from the file</label>
                             <input type="text" id="num_test_images" name="num_test_images" class="form-control" value="100" placeholder="All">
@@ -202,7 +284,7 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                             <input type="text" id="top_n" name="top_n" class="form-control" placeholder="9">
                         </div>
                         <button name="top-n-btn"
-                            formaction="{{url_for('image_classification_model_top_n', job_id=job.id())}}{{ workspace }}"
+                            formaction="{{url_for('image_classification_model_top_n', job_id=job.id())}}"
                             formmethod="post"
                             formenctype="multipart/form-data"
                             formtarget="_blank"
