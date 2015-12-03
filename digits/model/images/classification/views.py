@@ -8,6 +8,7 @@ import shutil
 import flask
 import werkzeug.exceptions
 import numpy as np
+import scipy.io
 
 import digits
 from digits.config import config_value
@@ -16,6 +17,7 @@ from digits.utils.routing import request_wants_json, job_from_request
 from digits.webapp import app, scheduler, autodoc
 from digits.dataset import ImageClassificationDatasetJob
 from digits import frameworks
+from digits.model import tasks
 from forms import ImageClassificationModelForm
 from job import ImageClassificationModelJob
 from digits.status import Status
@@ -254,6 +256,7 @@ def image_classification_model_large_graph():
 
     return flask.render_template('models/images/classification/large_graph.html', job=job, workspace = workspace)
 
+@app.route(NAMESPACE + '/visualize_one.json', methods=['POST'])
 @app.route(NAMESPACE + '/classify_one.json', methods=['POST'])
 @app.route(NAMESPACE + '/classify_one', methods=['POST', 'GET'])
 @autodoc(['models', 'api'])
@@ -292,7 +295,33 @@ def image_classification_model_classify_one():
 
     layers = 'none'
     if 'show_visualizations' in flask.request.form and flask.request.form['show_visualizations']:
-        layers = 'all'
+        if 'select_visualization_layer' in flask.request.form and flask.request.form['select_visualization_layer']:
+            layers = flask.request.form['select_visualization_layer']
+        else:
+            layers = 'all'
+
+    save_vis_file = False
+    save_file_type = ''
+    save_vis_file_location = ''
+    if 'save_vis_file' in flask.request.form and flask.request.form['save_vis_file']:
+        save_vis_file = True
+        if 'save_type_mat' in flask.request.form and flask.request.form['save_type_mat']:
+            save_file_type = 'mat'
+        elif 'save_type_numpy' in flask.request.form and flask.request.form['save_type_numpy']:
+            save_file_type = 'numpy'
+        else:
+            raise werkzeug.exceptions.BadRequest('No filetype selected. Expected .npy or .mat')
+        if 'save_vis_file_location' in flask.request.form and flask.request.form['save_vis_file_location']:
+            save_vis_file_location = flask.request.form['save_vis_file_location']
+        else:
+            raise werkzeug.exceptions.BadRequest('save_vis_file_location not provided.')
+    
+    if 'job_id' in flask.request.form and flask.request.form['job_id']:
+        job_id = flask.request.form['job_id']
+    elif 'job_id' in flask.request.args and flask.request.args['job_id']:
+        job_id = flask.request.args['job_id']
+    else:
+        raise werkzeug.exceptions.BadRequest('job_id is a necessary parameter, not found.')
 
     predictions, visualizations = None, None
     predictions, visualizations = job.train_task().infer_one(image, snapshot_epoch=epoch, layers=layers)
@@ -301,8 +330,33 @@ def image_classification_model_classify_one():
     if predictions:
         predictions = [(p[0], round(100.0*p[1],2)) for p in predictions[:5]]
 
+    if save_vis_file:
+        if save_file_type == 'numpy':
+            try:
+                np.array(visualizations).dump(open(save_vis_file_location+'/visualization_'+job_id+'.npy', 'wb'))
+            except:
+                raise werkzeug.exceptions.BadRequest('Error saving visualization data as Numpy array')
+        elif save_file_type == 'mat':
+            try:
+                scipy.io.savemat(save_vis_file_location+'/visualization_'+job_id+'.mat', {'visualizations':visualizations})
+            except IOError as e:
+                raise werkzeug.exceptions.BadRequest('I/O error{%s}: %s'% (e.errno, e.strerror))
+            except:
+                raise werkzeug.exceptions.BadRequest('Error saving visualization data as .mat file')
+        else:
+            raise werkzeug.exceptions.BadRequest('Invalid file-type for visualization data saving')
+
     if request_wants_json():
-        return flask.jsonify({'predictions': predictions})
+        if 'show_visualizations' in flask.request.form and flask.request.form['show_visualizations']:
+            # flask.jsonify has problems creating JSON from numpy.float32
+            # convert all non-dict, non-list and non-string elements to string.
+            for layer in visualizations:
+                for ele in layer:
+                    if not isinstance(layer[ele], dict) and not isinstance(layer[ele], str) and not isinstance(layer[ele], list):
+                        layer[ele] = str(layer[ele]) 
+            return flask.jsonify({'predictions': predictions, 'visualizations': visualizations})
+        else:
+            return flask.jsonify({'predictions': predictions})
     else:
         return flask.render_template('models/images/classification/classify_one.html',
                 job             = job,
@@ -370,7 +424,37 @@ def image_classification_model_classify_many():
         raise werkzeug.exceptions.BadRequest(
                 'Unable to load any images from the file')
 
-    labels, scores = job.train_task().infer_many(images, snapshot_epoch=epoch)
+    save_vis_file = False
+    layers = None
+    if 'save_visualizations' in flask.request.form and flask.request.form['save_visualizations']:
+        save_vis_file = True
+
+        # Check for specific layer
+        if 'select_visualization_layer_bulk' in flask.request.form and flask.request.form['select_visualization_layer_bulk']:
+            layers = flask.request.form['select_visualization_layer_bulk']
+        else:
+            layers = 'all'
+
+        # Select save file type
+        if 'save_type_mat_bulk' in flask.request.form and flask.request.form['save_type_mat_bulk']:
+            save_file_type = 'mat'
+        elif 'save_type_numpy_bulk' in flask.request.form and flask.request.form['save_type_numpy_bulk']:
+            save_file_type = 'numpy'
+        else:
+            raise werkzeug.exceptions.BadRequest('No filetype selected. Expected .npy or .mat')
+        
+        # Obtain savefile path.
+        if 'save_vis_file_location_bulk' in flask.request.form and flask.request.form['save_vis_file_location_bulk']:
+            save_vis_file_location = flask.request.form['save_vis_file_location_bulk']
+
+    if 'job_id' in flask.request.form and flask.request.form['job_id']:
+        job_id = flask.request.form['job_id']
+    elif 'job_id' in flask.request.args and flask.request.args['job_id']:
+        job_id = flask.request.args['job_id']
+    else:
+        raise werkzeug.exceptions.BadRequest('job_id is a necessary parameter, not found.')
+
+    labels, scores, visualizations = job.train_task().infer_many(images, snapshot_epoch=epoch, layers=layers)
     if scores is None:
         raise RuntimeError('An error occured while processing the images')
 
@@ -388,9 +472,47 @@ def image_classification_model_classify_many():
     # replace ground truth indices with labels
     ground_truths = [labels[x] if x is not None and (0 <= x < len(labels)) else None for x in ground_truths]
 
+    layer_data = {}
+    for image_vis in visualizations:
+        for layer in image_vis:
+            for ele in layer:
+                if ele=='image_html':
+                    continue
+                if layer['name'] in layer_data:
+                    if ele in layer_data[layer['name']]:
+                        layer_data[layer['name']][ele].append(layer[ele])
+                    else:
+                        layer_data[layer['name']][ele] = [layer[ele]]
+                else:
+                    layer_data[layer['name']] = {}
+                    layer_data[layer['name']][ele] = [layer[ele]]
+
+    if save_vis_file:
+        if save_file_type == 'numpy':
+            try:
+                joined_vis = layer_data
+                np.array(joined_vis).dump(open(save_vis_file_location+'/visualization_'+job_id+'.npy', 'wb'))
+            except:
+                raise werkzeug.exceptions.BadRequest('Error saving visualization data as Numpy array')
+        elif save_file_type == 'mat':
+            try:
+                joined_vis = layer_data
+                scipy.io.savemat(save_vis_file_location+'/visualization_'+job_id+'.mat', {'visualizations':joined_vis})
+            except IOError as e:
+                raise werkzeug.exceptions.BadRequest('I/O error{%s}: %s'% (e.errno, e.strerror))
+            except:
+                raise werkzeug.exceptions.BadRequest('Error saving visualization data as .mat file')
+        else:
+            raise werkzeug.exceptions.BadRequest('Invalid filetype for visualization data saving')
+
     if request_wants_json():
-        joined = dict(zip(paths, classifications))
-        return flask.jsonify({'classifications': joined})
+        if 'save_visualizations' in flask.request.form and flask.request.form['save_visualizations']:
+            joined_vis = layer_data
+            joined_class = dict(zip(paths, classifications))
+            return flask.jsonify({'classifications': joined_class, 'visualizations': joined_vis})
+        else:
+            joined = dict(zip(paths, classifications))
+            return flask.jsonify({'classifications': joined})
     else:
         return flask.render_template('models/images/classification/classify_many.html',
                 job             = job,
