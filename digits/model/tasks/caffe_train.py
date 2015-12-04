@@ -1112,8 +1112,8 @@ class CaffeTrainTask(TrainTask):
                 if layers[0] == 'all':
                     added_activations = []
                     for layer in self.network.layer:
-                        print 'Computing visualizations for "%s"...' % layer.name
                         if not layer.type.endswith(('Data', 'Loss', 'Accuracy')):
+                            print 'Computing visualizations for "%s"...' % layer.name
                             for bottom in layer.bottom:
                                 if bottom in net.blobs and bottom not in added_activations:
                                     data = net.blobs[bottom].data[0]
@@ -1137,7 +1137,7 @@ class CaffeTrainTask(TrainTask):
                             if layer.name in net.params:
                                 data = net.params[layer.name][0].data
                                 if layer.type not in ['InnerProduct']:
-                                    vis = self.get_layer_visualization(data)
+                                    vis = utils.image.get_layer_vis_square(data)
                                 else:
                                     vis = None
                                 mean, std, hist = self.get_layer_statistics(data)
@@ -1191,12 +1191,12 @@ class CaffeTrainTask(TrainTask):
                 elif layers[0] in all_network_layer_names:
                     layer = ''
                     for iter_layer in self.network.layer:
-                        if iter_layer.name == layers:
+                        if iter_layer.name == layers[0]:
                             layer = iter_layer
                             break
                     added_activations = []
-                    print 'Computing visualizations for "%s"...' % layer.name
                     if not layer.type.endswith(('Data', 'Loss', 'Accuracy')):
+                        print 'Computing visualizations for "%s"...' % layer.name
                         for bottom in layer.bottom:
                             if bottom in net.blobs and bottom not in added_activations:
                                 data = net.blobs[bottom].data[0]
@@ -1220,7 +1220,7 @@ class CaffeTrainTask(TrainTask):
                         if layer.name in net.params:
                             data = net.params[layer.name][0].data
                             if layer.type not in ['InnerProduct']:
-                                vis = self.get_layer_visualization(data)
+                                vis = utils.image.get_layer_vis_square(data)
                             else:
                                 vis = None
                             mean, std, hist = self.get_layer_statistics(data)
@@ -1282,8 +1282,8 @@ class CaffeTrainTask(TrainTask):
                                 break
                         added_activations = []
                         #for layer in self.network.layer:
-                        print 'Computing visualizations for "%s"...' % layer.name
                         if not layer.type.endswith(('Data', 'Loss', 'Accuracy')):
+                            print 'Computing visualizations for "%s"...' % layer.name
                             for bottom in layer.bottom:
                                 if bottom in net.blobs and bottom not in added_activations:
                                     data = net.blobs[bottom].data[0]
@@ -1307,7 +1307,7 @@ class CaffeTrainTask(TrainTask):
                             if layer.name in net.params:
                                 data = net.params[layer.name][0].data
                                 if layer.type not in ['InnerProduct']:
-                                    vis = self.get_layer_visualization(data)
+                                    vis = utils.image.get_layer_vis_square(data)
                                 else:
                                     vis = None
                                 mean, std, hist = self.get_layer_statistics(data)
