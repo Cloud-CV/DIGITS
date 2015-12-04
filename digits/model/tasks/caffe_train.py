@@ -1196,81 +1196,81 @@ class CaffeTrainTask(TrainTask):
                             break
                     added_activations = []
                     print 'Computing visualizations for "%s"...' % layer.name
-                        if not layer.type.endswith(('Data', 'Loss', 'Accuracy')):
-                            for bottom in layer.bottom:
-                                if bottom in net.blobs and bottom not in added_activations:
-                                    data = net.blobs[bottom].data[0]
-                                    vis = utils.image.get_layer_vis_square(data,
-                                            allow_heatmap=bool(bottom != 'data'))
-                                    mean, std, hist = self.get_layer_statistics(data)
-                                    visualizations.append(
-                                            {
-                                                'name': str(bottom),
-                                                'vis_type': 'Activation',
-                                                'image_html': utils.image.embed_image_html(vis),
-                                                'data_stats': {
-                                                    'shape': data.shape,
-                                                    'mean': mean,
-                                                    'stddev': std,
-                                                    'histogram': hist,
-                                                    },
-                                                }
-                                            )
-                                    added_activations.append(bottom)
-                            if layer.name in net.params:
-                                data = net.params[layer.name][0].data
-                                if layer.type not in ['InnerProduct']:
-                                    vis = self.get_layer_visualization(data)
-                                else:
-                                    vis = None
+                    if not layer.type.endswith(('Data', 'Loss', 'Accuracy')):
+                        for bottom in layer.bottom:
+                            if bottom in net.blobs and bottom not in added_activations:
+                                data = net.blobs[bottom].data[0]
+                                vis = utils.image.get_layer_vis_square(data,
+                                        allow_heatmap=bool(bottom != 'data'))
                                 mean, std, hist = self.get_layer_statistics(data)
-                                params = net.params[layer.name]
-                                weight_count = reduce(operator.mul, params[0].data.shape, 1)
-                                if len(params) > 1:
-                                    bias_count = reduce(operator.mul, params[1].data.shape, 1)
-                                else:
-                                    bias_count = 0
-                                parameter_count = weight_count + bias_count
                                 visualizations.append(
                                         {
-                                            'name': str(layer.name),
-                                            'vis_type': 'Weights',
-                                            'layer_type': layer.type,
-                                            'param_count': parameter_count,
+                                            'name': str(bottom),
+                                            'vis_type': 'Activation',
                                             'image_html': utils.image.embed_image_html(vis),
                                             'data_stats': {
-                                                'shape':data.shape,
+                                                'shape': data.shape,
                                                 'mean': mean,
                                                 'stddev': std,
                                                 'histogram': hist,
                                                 },
                                             }
                                         )
-                            for top in layer.top:
-                                if top in net.blobs and top not in added_activations:
-                                    data = net.blobs[top].data[0]
-                                    normalize = True
-                                    # don't normalize softmax layers
-                                    if layer.type == 'Softmax':
-                                        normalize = False
-                                    vis = utils.image.get_layer_vis_square(data,
-                                            normalize = normalize,
-                                            allow_heatmap = bool(top != 'data'))
-                                    mean, std, hist = self.get_layer_statistics(data)
-                                    visualizations.append(
-                                            {
-                                                'name': str(top),
-                                                'vis_type': 'Activation',
-                                                'image_html': utils.image.embed_image_html(vis),
-                                                'data_stats': {
-                                                    'shape': data.shape,
-                                                    'mean': mean,
-                                                    'stddev': std,
-                                                    'histogram': hist,
-                                                    },
-                                                }
-                                            )
-                                    added_activations.append(top)
+                                added_activations.append(bottom)
+                        if layer.name in net.params:
+                            data = net.params[layer.name][0].data
+                            if layer.type not in ['InnerProduct']:
+                                vis = self.get_layer_visualization(data)
+                            else:
+                                vis = None
+                            mean, std, hist = self.get_layer_statistics(data)
+                            params = net.params[layer.name]
+                            weight_count = reduce(operator.mul, params[0].data.shape, 1)
+                            if len(params) > 1:
+                                bias_count = reduce(operator.mul, params[1].data.shape, 1)
+                            else:
+                                bias_count = 0
+                            parameter_count = weight_count + bias_count
+                            visualizations.append(
+                                    {
+                                        'name': str(layer.name),
+                                        'vis_type': 'Weights',
+                                        'layer_type': layer.type,
+                                        'param_count': parameter_count,
+                                        'image_html': utils.image.embed_image_html(vis),
+                                        'data_stats': {
+                                            'shape':data.shape,
+                                            'mean': mean,
+                                            'stddev': std,
+                                            'histogram': hist,
+                                            },
+                                        }
+                                    )
+                        for top in layer.top:
+                            if top in net.blobs and top not in added_activations:
+                                data = net.blobs[top].data[0]
+                                normalize = True
+                                # don't normalize softmax layers
+                                if layer.type == 'Softmax':
+                                    normalize = False
+                                vis = utils.image.get_layer_vis_square(data,
+                                        normalize = normalize,
+                                        allow_heatmap = bool(top != 'data'))
+                                mean, std, hist = self.get_layer_statistics(data)
+                                visualizations.append(
+                                        {
+                                            'name': str(top),
+                                            'vis_type': 'Activation',
+                                            'image_html': utils.image.embed_image_html(vis),
+                                            'data_stats': {
+                                                'shape': data.shape,
+                                                'mean': mean,
+                                                'stddev': std,
+                                                'histogram': hist,
+                                                },
+                                            }
+                                        )
+                                added_activations.append(top)
                 else:
                     raise Exception("%s layer is not present in the Network! Try passing 'all' as layer-name parameters to view all layers." % layers[0])
             elif len(layers) > 1:
