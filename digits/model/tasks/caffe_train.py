@@ -1434,7 +1434,7 @@ class CaffeTrainTask(TrainTask):
             data_shape = (constants.DEFAULT_BATCH_SIZE,) + data_shape
 
         if layers:
-            layers = [layer.strip() for layer in layers.split(',')]
+            print layers
             # Take one image at a time to create visualizations for each.
             image_chunks = [caffe_images[x:x+1] for x in xrange(0, len(caffe_images))]
         else:

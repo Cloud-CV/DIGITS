@@ -474,22 +474,22 @@ def image_classification_model_classify_many():
     # replace ground truth indices with labels
     ground_truths = [labels[x] if x is not None and (0 <= x < len(labels)) else None for x in ground_truths]
 
-    layer_data = {}
-    for image_vis in visualizations:
-        for layer in image_vis:
-            for ele in layer:
-                if ele=='image_html':
-                    continue
-                if layer['name'] in layer_data:
-                    if ele in layer_data[layer['name']]:
-                        layer_data[layer['name']][ele].append(layer[ele])
-                    else:
-                        layer_data[layer['name']][ele] = [layer[ele]]
-                else:
-                    layer_data[layer['name']] = {}
-                    layer_data[layer['name']][ele] = [layer[ele]]
-
     if save_vis_file:
+        layer_data = {}
+        for image_vis in visualizations:
+            for layer in image_vis:
+                for ele in layer:
+                    if ele=='image_html':
+                        continue
+                    if layer['name'] in layer_data:
+                        if ele in layer_data[layer['name']]:
+                            layer_data[layer['name']][ele].append(layer[ele])
+                        else:
+                            layer_data[layer['name']][ele] = [layer[ele]]
+                    else:
+                        layer_data[layer['name']] = {}
+                        layer_data[layer['name']][ele] = [layer[ele]]
+
         if save_file_type == 'numpy':
             try:
                 joined_vis = layer_data
