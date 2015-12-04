@@ -164,6 +164,17 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                                 ></span>
                         </div>
                         <div class="form-group">
+                            <label for="save_vis_file">
+                                <input id="save_vis_file" name="save_vis_file" type="checkbox" value="y">
+                                Save layer activations on disk.
+                            </label>
+                            <span name="save_vis_file_explanation"
+                                class="explanation-tooltip glyphicon glyphicon-question-sign"
+                                data-container="body"
+                                title="Save the data of visualization as numpy array or .mat file of coordinates at below specified location."
+                                ></span>
+                        </div>
+                        <div class="form-group">
                             <label for="save_type" class="control-label">Store data as :</label>
                             <span name="save_type_explanation"
                                 class="explanation-tooltip glyphicon glyphicon-question-sign"
@@ -217,7 +228,7 @@ updateSnapshotList({% autoescape false %}{{task.snapshot_list()}}{% endautoescap
                         <div class="form-group">
                             <label for="save_visualizations">
                                 <input id="save_visualizations" name="save_visualizations" type="checkbox" value="y">
-                                Save visualizations and statistics
+                                Save layer activations on disk.
                             </label>
                             <span name="save_visualizations_explanation"
                                 class="explanation-tooltip glyphicon glyphicon-question-sign"
