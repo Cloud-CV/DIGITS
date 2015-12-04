@@ -342,7 +342,9 @@ def image_classification_model_classify_one():
             except IOError as e:
                 raise werkzeug.exceptions.BadRequest('I/O error{%s}: %s'% (e.errno, e.strerror))
             except:
-                raise werkzeug.exceptions.BadRequest('Error saving visualization data as .mat file')
+                visualizations = remove_none(visualizations)
+                scipy.io.savemat(save_vis_file_location+'/visualization_'+job_id+'.mat', {'visualizations':visualizations})
+                #raise werkzeug.exceptions.BadRequest('Error saving visualization data as .mat file')
         else:
             raise werkzeug.exceptions.BadRequest('Invalid file-type for visualization data saving')
 
@@ -497,6 +499,7 @@ def image_classification_model_classify_many():
         elif save_file_type == 'mat':
             try:
                 joined_vis = layer_data
+                joined_vis = remove_none(joined_vis)
                 scipy.io.savemat(save_vis_file_location+'/visualization_'+job_id+'.mat', {'visualizations':joined_vis})
             except IOError as e:
                 raise werkzeug.exceptions.BadRequest('I/O error{%s}: %s'% (e.errno, e.strerror))
@@ -659,3 +662,15 @@ def get_previous_network_snapshots():
         prev_network_snapshots.append(e)
     return prev_network_snapshots
 
+def remove_none(obj):
+    '''
+    Called while saving visualizations as .mat file.
+    sciy.io.savemat() currently doesn't handle None properly.
+    Link : https://github.com/scipy/scipy/issues/3488
+    '''
+    if isinstance(obj, (list, tuple, set)):
+        return type(obj)(remove_none(x) for x in obj if x is not None)
+    elif isinstance(obj, dict):
+        return type(obj)((remove_none(k), remove_none(v)) for k, v in obj.items() if k is not None and v is not None)
+    else:
+        return obj
